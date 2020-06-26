@@ -11,7 +11,7 @@ base_url = "https://www.bundestag.de"
 link_register_url  <- "/ajax/filterlist/de/services/opendata/543410-543410"
 
 
-offset <- 90
+offset <- 0
 limit <- 10
 
 
