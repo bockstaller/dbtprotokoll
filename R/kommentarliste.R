@@ -2,6 +2,7 @@ library(xml2)
 library(tidyverse)
 
 #returns a tibble of all comments and the speech id they were taken in
+#!Not saved information: which particular paragraph a comment has followed. For our analysis, this information is irrelevant. Therefore we agreed that knowing the speech id would be sufficient.
 kommliste <- function(protokoll){
   redeliste <- xml_find_all(protokoll, ".//rede")
   kommentare <- xml_find_all(redeliste, ".//kommentar") #first, find all comments in speeches
@@ -25,7 +26,7 @@ kommliste <- function(protokoll){
     j <- j+1
   }
   #transform data frame to tibble for easier analysis later
-  kommentartb <- as.tibble(kommentardf)
+  kommentartb <- as_tibble(kommentardf)
   return(kommentartb)
 
 }
