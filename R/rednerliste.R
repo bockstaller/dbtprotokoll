@@ -7,8 +7,8 @@ library(tidyverse)
 #returns a tibble of all the names of the speakers
 rednerliste <- function(protokoll){
   rednerliste <- xml_find_all(protokoll, ".//rednerliste")
-  redner_namen <- xml_find_all(rednerliste, ".//name")
-  rednertbs <- sapply(as_list(redner_namen), name_to_tibble)
+  redner <- xml_find_all(rednerliste, ".//redner")
+  rednertbs <- sapply(redner, name_to_tibble)
 
   #combine single tibbles to one big tibble
   rednertb <- rednertbs[1]
@@ -18,11 +18,12 @@ rednerliste <- function(protokoll){
     i <- i + 1
   }
 
-  ids <- unlist((xml_attr(xml_find_all(rednerliste, ".//redner"), "id")))
-  mutate(rednertb, id = ids) %>% select(id, titel, vorname, namenszusatz, nachname, everything())
+  select(rednertb, id, titel, vorname, namenszusatz, nachname, everything())
 }
 
-#return a tibble with the hole name for a given name of a speaker
+#return a tibble with the whole name and id for a given name of a speaker
 name_to_tibble <- function(redner){
-  enframe(unlist(redner)) %>% pivot_wider(names_from = name, values_from = value)
+  enframe(unlist(as_list(xml_find_all(redner, ".//name")))) %>%
+    pivot_wider(names_from = name, values_from = value) %>%
+    mutate(id = xml_attr(redner, "id"))
 }
