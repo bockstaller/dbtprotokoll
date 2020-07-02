@@ -87,8 +87,8 @@ kommliste <- function(protokoll){
 
 
 #returns a tibble of all paragraphs the speech id they were taken in, who said them and what kind of speech they are
-#!Not saved information: paragraphs which aren''t part of speech are ignored
-#!Bug: moderation from the president/vicepresidents is included and attributet incorrectly. We have to check if they are the only ones who talk without getting a speech element as introduction
+#!Not saved information: paragraphs which aren't part of speech are ignored
+#!Bug: moderation from the president/vicepresidents is included and attributed incorrectly. We have to check if they are the only ones who talk without getting a speech element as introduction
 paraliste <- function(protokoll){
   speechlist <- xml_find_all(protokoll, ".//rede/p | .//rede/name")
 
@@ -103,8 +103,6 @@ paraliste <- function(protokoll){
   #filling the data frame with content from comment list
   j <- 1
   current_speaker = 0L
-
-  #print(length(speechlist))
 
   for (i in speechlist) { #for every comment
     current_speech <- xml_parent(i) #find current speech
@@ -128,6 +126,5 @@ paraliste <- function(protokoll){
   #transform data frame to tibble for easier analysis later
   absatztb <- as_tibble(absatzdf)
   return(absatztb)
-  #return(paragraphs)
 }
 
