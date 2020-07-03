@@ -19,8 +19,6 @@ paraliste <- function(protokoll){
   j <- 1
   current_speaker = 0L
 
-  print(length(speechlist))
-
   for (i in speechlist) { #for every comment
     current_speech <- xml_parent(i) #find current speech
     speech_id <- xml_attr(current_speech, "id") #retrieve id of current speech
@@ -42,8 +40,7 @@ paraliste <- function(protokoll){
 
   #transform data frame to tibble for easier analysis later
   absatztb <- as_tibble(absatzdf)
-  return(absatzdf)
-  #return(paragraphs)
+  return(absatztb)
 }
 
 #testing
