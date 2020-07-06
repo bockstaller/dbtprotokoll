@@ -1,10 +1,20 @@
 library(xml2)
 library(tidyverse)
 
-#returns a tibble of all paragraphs the speech id they were taken in, who said them and what kind of speech they are
-#!Not saved information: paragraphs which aren't part of speech are ignored
-#!Bug: moderation from the president/vicepresidents is included and attributet incorrectly. We have to check if they are the only ones who talk without getting a speech element as introduction
-paragraph_list <- function(protokoll){
+
+#' Parse a plenary protocol from xml for paragraphs into tibbles
+#'
+#' Uses the xml structure of a plenary protocol to create two tibbles for further analysis
+#'
+#' @param protocol a XML nodeset as returned by xml2 containing a plenary protocoll
+#'
+#' @return A tibble containing all officially spoken paragraphs during a plenary speech.
+#' Including the main speach, moderatory interjections and questions by parliament members
+#'
+#' @examples
+#' paragraph_list(read_xml("./protokolle/19007-data.xml"))
+#'
+#'@export
 paragraph_list <- function(protocol){
 
   #create data frame of fitting shape to collect comments
