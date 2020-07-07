@@ -25,7 +25,7 @@ parse_protokoll <- function(path){
   print("Parsing...this might take some time.")
   rednertb <- rednerliste(protokoll)
   kommentartb <- kommliste(protokoll)
-  absatztb <- paraliste(protokoll)
+  absatztb <- paragraph_list(protokoll)
 
   return(list("rednerliste"=rednertb,"absatzliste"=absatztb, "kommentarliste"=kommentartb))
 }
