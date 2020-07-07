@@ -1,7 +1,3 @@
-library(xml2)
-library(tidyverse)
-
-
 #' Parse a plenary protocol from xml for paragraphs into tibbles
 #'
 #' Uses the xml structure of a plenary protocol to create two tibbles for further analysis
@@ -29,7 +25,7 @@ paragraph_list <- function(protocol){
                   )
 
   # we are only interestet in elements contained in speeches
-  speech_list <- xml_find_all(protocol, ".//rede/p | .//rede/name")
+  speech_list <- xml2::xml_find_all(protocol, ".//rede/p | .//rede/name")
 
   # we assume that paragraphs in a speech section can be grouped into "speech" and "moderation"
   # a speech section always starts with a speaker
@@ -45,30 +41,28 @@ paragraph_list <- function(protocol){
   # we try to prove that the first paragraph a persons says is highlighted as J_!
   j_1_gate = FALSE
 
-
-
   for (i in 1L:length(speech_list)){
     # we handle a moderation section by appending the name of the moderator to a list
     # which gets deduplicated later and setting some modes
     # we do not reset the current speaker, this way we have a chance to know who gets moderated
     # we do not append to the paragraph list
 
-    if (xml_name(speech_list[i]) == "name"){
-      current_moderator <- xml_text(speech_list[i])
+    if (xml2::xml_name(speech_list[i]) == "name"){
+      current_moderator <- xml2::xml_text(speech_list[i])
       current_speech_type <- 3
       j_1_gate <- FALSE
       next()
     }
 
-    if (xml_name(speech_list[i]) == "p"){
-      class <- xml_attr(speech_list[i], "klasse")
+    if (xml2::xml_name(speech_list[i]) == "p"){
+      class <- xml2::xml_attr(speech_list[i], "klasse")
 
       # in case of a new speaker
       # we reset the moderator, save the speaker id and change some modes
       # we do not append to the paragraph list
       if (class == "redner"){
         current_moderator <- NA
-        current_speaker <- as.integer(xml_attr(xml_child(speech_list[i], "redner"), "id"))
+        current_speaker <- as.integer(xml2::xml_attr(xml2::xml_child(speech_list[i], "redner"), "id"))
         current_speech_type <- 2
         j_1_gate <- FALSE
 
@@ -86,9 +80,9 @@ paragraph_list <- function(protocol){
                                        speaker_id = current_speaker,
                                        moderator = current_moderator,
                                        speech_type = speech_types[current_speech_type],
-                                       speech = xml_attr(xml_parent(speech_list[i]), "id"),
+                                       speech = xml2::xml_attr(xml2::xml_parent(speech_list[i]), "id"),
                                        class = class,
-                                       content = xml_text(speech_list[i]),
+                                       content = xml2::xml_text(speech_list[i]),
                                        j_1_gate = j_1_gate)
 
       next()
@@ -97,7 +91,7 @@ paragraph_list <- function(protocol){
   }
 
   #transform data frame to tibble for easier analysis later
-  paragraph_tb <- as_tibble(paragraph_df)
+  paragraph_tb <- tibble::as_tibble(paragraph_df)
 
   return(paragraph_tb)
 
