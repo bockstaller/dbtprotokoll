@@ -26,7 +26,6 @@ parse_protokoll <- function(path){
   rednertb <- rednerliste(protokoll)
   kommentartb <- kommliste(protokoll)
   absatztb <- paragraph_list(protokoll)
-
   return(list("rednerliste"=rednertb,"absatzliste"=absatztb, "kommentarliste"=kommentartb))
 }
 

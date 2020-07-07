@@ -5,6 +5,7 @@ library(tidyverse)
 #rednerliste(read_xml("protokolle/19003-data.xml"))
 
 #returns a tibble of all the names of the speakers
+#'@export
 rednerliste <- function(protokoll){
   rednerliste <- xml_find_all(protokoll, ".//rednerliste")
   redner <- xml_find_all(rednerliste, ".//redner")

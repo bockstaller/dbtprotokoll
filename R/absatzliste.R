@@ -1,5 +1,4 @@
 #' Parse a plenary protocol from xml for paragraphs into tibbles
-#'
 #' Uses the xml structure of a plenary protocol to create two tibbles for further analysis
 #'
 #' @param protocol a XML nodeset as returned by xml2 containing a plenary protocoll
@@ -9,8 +8,7 @@
 #'
 #' @examples
 #' paragraph_list(read_xml("./protokolle/19007-data.xml"))
-#'
-#'@export
+#' @export
 paragraph_list <- function(protocol){
 
   #create data frame of fitting shape to collect comments
