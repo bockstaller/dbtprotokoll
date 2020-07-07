@@ -1,6 +1,8 @@
 library(tidyverse)
 library(xml2)
 
+
+
 bspprotokoll <- parse_protokoll("./protokolle/19007-data.xml")
 kommentare <- bspprotokoll$kommentarliste
 rednerInnen <- bspprotokoll$rednerliste
