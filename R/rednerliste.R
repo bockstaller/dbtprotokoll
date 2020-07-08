@@ -19,7 +19,13 @@ speakers <- function(protokoll){
     i <- i + 1
   }
 
-  select(speakertb, id, titel, vorname, namenszusatz, nachname, everything())
+  #bring tibble in neat order, but be careful because of possibility of missing "namenszusatz"-column
+  if("namenszusatz" %in% colnames(speakertb)){
+    return(select(speakertb, id, titel, vorname, namenszusatz, nachname, everything()))
+  }
+  else{
+    return(select(speakertb, id, titel, vorname, nachname, everything()))
+  }
 }
 
 #return a tibble with the whole name and id for a given name of a speaker
