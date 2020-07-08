@@ -1,5 +1,3 @@
-library(xml2)
-library(tidyverse)
 
 
 #'Parse a plenary protocol from xml format to tibbles
@@ -21,8 +19,8 @@ library(tidyverse)
 #'
 #'@export
 parse_protocol <- function(path){
-  protocol <- read_xml(path)
-  speakertb <- speakerlist(protocol)
+  protocol <- xml2::read_xml(path)
+  speakertb <- rednerliste(protocol)
   commenttb <- comment_list(protocol)
   paragraphtb <- paragraph_list(protocol)
   return(list("speakers"=speakertb,"paragraphs"=paragraphtb, "comments"=commenttb))
