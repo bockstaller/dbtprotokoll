@@ -20,7 +20,7 @@
 #'@export
 parse_protocol <- function(path){
   protocol <- xml2::read_xml(path)
-  speakertb <- rednerliste(protocol)
+  speakertb <- speakers(protocol)
   commenttb <- comment_list(protocol)
   paragraphtb <- paragraph_list(protocol)
   return(list("speakers"=speakertb,"paragraphs"=paragraphtb, "comments"=commenttb))
@@ -74,18 +74,18 @@ parse_protocols <- function(path = "protokolle", start = NULL, end = NULL){
   }
 
   #merge protocols
-  protocolstb <- list("speakers"=tidyverse::tibble(),
-                      "paragraphs"=tidyverse::tibble(),
-                      "comments"=tidyverse::tibble())
+  protocolstb <- list("speakers"=tibble::tibble(),
+                      "paragraphs"=tibble::tibble(),
+                      "comments"=tibble::tibble())
   for(protocol in protocols){
     currenttb <- parse_protocol(stringr::str_c(path, "/", protocol))
     for(j in 1:3){
-      protocolstb[[j]] <- tidyverse::bind_rows(protocolstb[[j]], currenttb[[j]])
+      protocolstb[[j]] <- dplyr::bind_rows(protocolstb[[j]], currenttb[[j]])
     }
   }
 
   #tidy speakers
-  protocolstb[[1]] <- tidyverse::distinct(protocolstb[[1]])
+  protocolstb[[1]] <- dplyr::distinct(protocolstb[[1]])
 
   return(protocolstb)
 }
