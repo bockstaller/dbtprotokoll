@@ -39,11 +39,11 @@ parse_protocol <- function(path){
 #'
 #'@return Three tibbles in a named list:
 #'
-#'"rednerliste": A tibble of all speaking politicians containing speaker id, name, party and similar information.
+#'"speakers": A tibble of all speaking politicians containing speaker id, name, party and similar information.
 #'
-#'"absatzliste": A tibble of all paragraphs in speeches, containing speaker id, speech id and content of the paragraph.
+#'"paragraphs": A tibble of all paragraphs in speeches, containing speaker id, speech id and content of the paragraph.
 #'
-#'"kommentarliste": A tibble of all comments given during speeches and about reactions to speeches, containing speech id and comment id as well as content of the comment.
+#'"comments": A tibble of all comments given during speeches and about reactions to speeches, containing speech id and comment id as well as content of the comment.
 #'
 #'@examples
 #'parse_protocols(start = "19001-data.xml", end = "19003-data.xml")
@@ -74,11 +74,11 @@ parse_protocols <- function(path = "protokolle", start = NULL, end = NULL){
   }
 
   #merge protocols
-  protocolstb <- list("rednerliste"=tidyverse::tibble(),
-                      "absatzliste"=tidyverse::tibble(),
-                      "kommentarliste"=tidyverse::tibble())
+  protocolstb <- list("speakers"=tidyverse::tibble(),
+                      "paragraphs"=tidyverse::tibble(),
+                      "comments"=tidyverse::tibble())
   for(protocol in protocols){
-    currenttb <- parse_protokoll(stringr::str_c(path, "/", protocol))
+    currenttb <- parse_protocol(stringr::str_c(path, "/", protocol))
     for(j in 1:3){
       protocolstb[[j]] <- tidyverse::bind_rows(protocolstb[[j]], currenttb[[j]])
     }
