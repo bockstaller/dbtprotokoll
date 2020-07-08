@@ -1,5 +1,3 @@
-library(xml2)
-library(tidyverse)
 
 
 #'Parse a plenary protocol from xml format to tibbles
@@ -10,23 +8,22 @@ library(tidyverse)
 #'
 #'@return Three tibbles in a named list:
 #'
-#'"rednerliste": A tibble of all speaking politicians containing speaker id, name, party and similar information.
+#'"speakers": A tibble of all speaking politicians containing speaker id, name, party and similar information.
 #'
-#'"absatzliste": A tibble of all paragraphs in speeches, containing speaker id, speech id and content of the paragraph.
+#'"paragraphs": A tibble of all paragraphs in speeches, containing speaker id, speech id and content of the paragraph.
 #'
-#'"kommentarliste": A tibble of all comments given during speeches and about reactions to speeches, containing speech id and comment id as well as content of the comment.
+#'"comments": A tibble of all comments given during speeches and about reactions to speeches, containing speech id and comment id as well as content of the comment.
 #'
 #'@examples
-#'parse_protokoll("./protokolle/19007-data.xml")
+#'parse_protocol("./protokolle/19007-data.xml")
 #'
 #'@export
-parse_protokoll <- function(path){
-  protokoll <- read_xml(path)
-  print("Parsing...this might take some time.")
-  rednertb <- rednerliste(protokoll)
-  kommentartb <- kommliste(protokoll)
-  absatztb <- paragraph_list(protokoll)
-  return(list("rednerliste"=rednertb,"absatzliste"=absatztb, "kommentarliste"=kommentartb))
+parse_protocol <- function(path){
+  protocol <- xml2::read_xml(path)
+  speakertb <- rednerliste(protocol)
+  commenttb <- comment_list(protocol)
+  paragraphtb <- paragraph_list(protocol)
+  return(list("speakers"=speakertb,"paragraphs"=paragraphtb, "comments"=commenttb))
 }
 
 

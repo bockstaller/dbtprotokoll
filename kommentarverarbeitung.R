@@ -4,7 +4,7 @@ library(dbtprotokoll)
 
 
 
-bspprotokoll <- parse_protokoll("./protokolle/19007-data.xml")
+bspprotokoll <- parse_protokoll("./protokolle/19005-data.xml")
 kommentare <- bspprotokoll$kommentarliste
 rednerInnen <- bspprotokoll$rednerliste
 absaetze <- bspprotokoll$absatzliste
@@ -51,3 +51,70 @@ redenbeifall <- left_join(rdnfraktion, bflfraktion)
 redenbeifall %>%
   mutate('bfl_pro_rede'=beifaelle/reden) %>%
   arrange(desc(bfl_pro_rede))
+
+
+####################
+kommentare %>%
+  filter(str_detect(inhalt, "Heiterkeit ")) -> heiterkeiten
+
+kombitabelle <- left_join(heiterkeiten, matchrede, by=c('absatz_id'= 'speech'))
+
+heiteranzahl <- left_join(kombitabelle, matchredner, by = c('speaker_id'='id'))
+
+heiteranzahl %>%
+  group_by(fraktion) %>%
+  summarize('heiterkeiten' =n()) %>%
+  arrange(desc(heiterkeiten)) -> htkfraktion
+
+redenheiterkeit <- left_join(rdnfraktion, htkfraktion)
+
+redenheiterkeit %>%
+  mutate('htk_pro_rede'=heiterkeiten/reden) %>%
+  arrange(desc(htk_pro_rede))
+
+###########################
+
+kommentare %>%
+  filter(str_detect(inhalt, "Lachen ")) -> lachen
+
+kombitabelle <- left_join(lachen, matchrede, by=c('absatz_id'= 'speech'))
+
+lachanzahl <- left_join(kombitabelle, matchredner, by = c('speaker_id'='id'))
+
+lachanzahl %>%
+  group_by(fraktion) %>%
+  summarize('lachen' =n()) %>%
+  arrange(desc(lachen)) -> lchfraktion
+
+redenlachen <- left_join(rdnfraktion, lchfraktion)
+
+redenlachen %>%
+  mutate('lch_pro_rede'=lachen/reden) %>%
+  arrange(desc(lch_pro_rede))
+######################################
+
+kommentare %>%
+  filter(str_detect(inhalt, "Zuruf")) -> zurufe
+
+kombitabelle <- left_join(zurufe, matchrede, by=c('absatz_id'= 'speech'))
+
+zurufanzahl <- left_join(kombitabelle, matchredner, by = c('speaker_id'='id'))
+
+zurufanzahl %>%
+  group_by(fraktion) %>%
+  summarize('zurufe' =n()) %>%
+  arrange(desc(zurufe)) -> zrffraktion
+
+redenzurufe <- left_join(rdnfraktion, zrffraktion)
+
+redenzurufe %>%
+  mutate('zrf_pro_rede'=zurufe/reden) %>%
+  arrange(desc(zrf_pro_rede))
+
+##############################
+
+unterbrechungen <- left_join(redenbeifall,redenheiterkeit)
+unterbrechungen <- left_join(unterbrechungen, redenlachen)
+unterbrechungen <- left_join(unterbrechungen, redenzurufe)
+
+unterbrechungen
