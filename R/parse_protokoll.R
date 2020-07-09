@@ -35,7 +35,7 @@ parse_protocol <- function(path){
 #'
 #'@param start A string of the protocol you want to start with (optional)
 #'
-#'@param end A string of the protocol you want to end with (optional). Must succed start in alphabetical order
+#'@param end A string of the protocol you want to end with (optional). Must succeed start in alphabetical order
 #'
 #'@return Three tibbles in a named list:
 #'
