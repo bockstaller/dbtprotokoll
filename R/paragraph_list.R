@@ -14,7 +14,7 @@ paragraph_list <- function(protocol){
   paragraph_df <- data.frame(id = integer(),
                          speech = character(),
                          speech_type = character(),
-                         speaker_id = integer(),
+                         speaker_id = character(),
                          moderator = character(),
                          class = character(),
                          content = character(),
@@ -59,7 +59,7 @@ paragraph_list <- function(protocol){
       # we do not append to the paragraph list
       if (class == "redner"){
         current_moderator <- NA
-        current_speaker <- as.integer(xml2::xml_attr(xml2::xml_child(speech_list[i], "redner"), "id"))
+        current_speaker <- xml2::xml_attr(xml2::xml_child(speech_list[i], "redner"), "id")
         current_speech_type <- 2
         j_1_gate <- FALSE
 
@@ -73,14 +73,15 @@ paragraph_list <- function(protocol){
       }
 
 
-      paragraph_df <- paragraph_df %>% add_row(id = i,
-                                speaker_id = current_speaker,
-                                moderator = current_moderator,
-                                speech_type = speech_types[current_speech_type],
-                                speech = xml2::xml_attr(xml2::xml_parent(speech_list[i]), "id"),
-                                class = class,
-                                content = xml2::xml_text(speech_list[i]),
-                                j_1_gate = j_1_gate)
+      paragraph_df <- tibble::add_row(paragraph_df,
+                                      id = i,
+                                      speaker_id = current_speaker,
+                                      moderator = current_moderator,
+                                      speech_type = speech_types[current_speech_type],
+                                      speech = xml2::xml_attr(xml2::xml_parent(speech_list[i]), "id"),
+                                      class = class,
+                                      content = xml2::xml_text(speech_list[i]),
+                                      j_1_gate = j_1_gate)
 
       next()
     }
