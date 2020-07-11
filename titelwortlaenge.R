@@ -18,14 +18,14 @@ academics <- filter(baseprotocol[[1]], !is.na(titel))
 nonacademics <- filter(baseprotocol[[1]], is.na(titel))
 
 #analysis for academics
-academic_speaches <- left_join(academics, mutate(baseprotocol[[2]],speaker_id=as.character(speaker_id)),
+academic_speaches <- left_join(academics, mutate(baseprotocol[[2]],speaker_id=speaker_id),
                                by = c("id" = "speaker_id"))
 academic_speaches <- filter(academic_speaches, speech_type == "speech")
 academic_mean_word_length <- mean(sapply(academic_speaches$content, word_length))
 
 
 #analysis for nonacademics:
-nonacademic_speaches <- left_join(nonacademics, mutate(baseprotocol[[2]],speaker_id=as.character(speaker_id)),
+nonacademic_speaches <- left_join(nonacademics, mutate(baseprotocol[[2]],speaker_id=speaker_id),
                                   by = c("id" = "speaker_id"))
 nonacademic_speaches <- filter(nonacademic_speaches, speech_type == "speech")
 nonacademic_mean_word_length <- mean(sapply(nonacademic_speaches$content, word_length))

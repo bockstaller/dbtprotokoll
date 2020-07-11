@@ -19,7 +19,7 @@ absaetze %>%
   select(speech, 'speaker_id') %>%
   distinct(speech, .keep_all = TRUE) -> matchrede
 
-matchrede$speaker_id <- as.character(matchrede$speaker_id)
+matchrede$speaker_id <- matchrede$speaker_id
 
 kombitabelle <- left_join(beifaelle, matchrede, by=c('paragraph_id'= 'speech'))
 
