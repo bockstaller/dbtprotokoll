@@ -5,6 +5,8 @@
 #'Uses the xml structure of a plenary protocol to create three tibbles for further data analysis.
 #'
 #'@param path A string containing the path to the xml file you want to parse
+#'@param check_schema A logical value indicating whether you want to check compatibility of the xml schema used in your xml file.
+#
 #'
 #'@return Three tibbles in a named list:
 #'
@@ -18,8 +20,14 @@
 #'parse_protocol("./protokolle/19007-data.xml")
 #'
 #'@export
-parse_protocol <- function(path){
+parse_protocol <- function(path, check_schema = TRUE){
+  stopifnot("Please enter path as string" = is.character(path))
   protocol <- xml2::read_xml(path)
+  if(check_schema){
+    schema <- xml2::read_xml("./protokolle/dbtplenarprotokoll-schema.xsd")
+    stopifnot("XML Schema is not as expected." = xml2::xml_validate(protocol, schema))
+  }
+
   speakertb <- speakers(protocol)
   commenttb <- comment_list(protocol)
   paragraphtb <- paragraph_list(protocol)
