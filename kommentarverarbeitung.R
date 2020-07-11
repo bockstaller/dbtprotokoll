@@ -1,13 +1,18 @@
 library(tidyverse)
 library(xml2)
 library(dbtprotokoll)
+library(ggplot2)
 
 
 
-bspprotokoll <- parse_protocol("./protokolle/19005-data.xml")
+bspprotokoll <- parse_protocols(start = "19001-data.xml", end = "19050-data.xml")
 kommentare <- bspprotokoll$comments
 rednerInnen <- bspprotokoll$speakers
 absaetze <- bspprotokoll$paragraphs
+
+rednerInnen$fraktion <- str_trim(rednerInnen$fraktion)
+rednerInnen$fraktion <- str_replace(rednerInnen$fraktion, "BÜNDNIS 90/.*", "BÜNDNIS 90/DIE GRÜNEN")
+
 
 kommentare %>%
   filter(str_detect(content, "Beifall ")) -> beifaelle
@@ -50,7 +55,9 @@ redenbeifall <- left_join(rdnfraktion, bflfraktion)
 
 redenbeifall %>%
   mutate('bfl_pro_rede'=beifaelle/reden) %>%
-  arrange(desc(bfl_pro_rede))
+  arrange(desc(bfl_pro_rede)) -> bflprorede
+
+ggplot(bflprorede, mapping= aes(x=fraktion, y=bfl_pro_rede) ) + geom_bar(stat="identity")
 
 
 #nächster Teil: wer gibt Beifall? Idee: mutate in kombination mit einer regex funktion,
@@ -67,6 +74,8 @@ kombitabelle <- left_join(bflwerwann, matchrede, by = c('paragraph_id' = 'speech
 
 rednerInnen %>%
   select(id, fraktion) -> matchredner
+#matchredner$fraktion <- str_trim(matchredner$fraktion)
+#matchredner$fraktion <- str_replace(matchredner$fraktion, "BÜNDNIS 90/.*", "BÜNDNIS 90/DIE GRÜNEN")
 
 bflwerwem <- left_join(kombitabelle, matchredner, by= c('speaker_id' = 'id'))
 
@@ -81,7 +90,16 @@ bflwerwem %>%
 #diese Tabelle heißt bflwerwem_anteile
 
 bflwerwem_anteile %>%
-  select(`redende fraktion`,starts_with('anteilig'))
+  select(`redende fraktion`,starts_with('anteilig')) -> bfl_antl
+
+
+#ggplot(bflwerwem, mapping= aes(x= fraktion) ) + geom_bar()
+#ggplot(bfl_antl, mapping= aes(x= `redende fraktion`)) + geom_bar(stat="identity")
+
+bfl_antl <- select(bfl_antl, `redende fraktion`, 'CDU/CSU' = anteilig_CDU, 'SPD' = anteilig_SPD, 'FDP' = anteilig_FDP, 'GRÜNE' = anteilig_GRÜNE, 'AfD' = anteilig_AfD, 'LINKE' = anteilig_LINKE )
+bfl_antl <- pivot_longer(bfl_antl, `CDU/CSU`:LINKE, names_to = 'beifallgebend', values_to = 'anteile')
+
+ggplot(bfl_antl, mapping= aes(x=beifallgebend, y=anteile, fill= `redende fraktion`)) + geom_bar(stat="identity")
 
 ####################
 kommentare %>%
