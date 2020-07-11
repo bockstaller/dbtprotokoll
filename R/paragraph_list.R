@@ -8,7 +8,6 @@
 #'
 #' @examples
 #' paragraph_list(read_xml("./protokolle/19007-data.xml"))
-#' @export
 paragraph_list <- function(protocol){
 
   #create data frame of fitting shape to collect comments
@@ -75,13 +74,13 @@ paragraph_list <- function(protocol){
 
 
       paragraph_df <- paragraph_df %>% add_row(id = i,
-                                       speaker_id = current_speaker,
-                                       moderator = current_moderator,
-                                       speech_type = speech_types[current_speech_type],
-                                       speech = xml2::xml_attr(xml2::xml_parent(speech_list[i]), "id"),
-                                       class = class,
-                                       content = xml2::xml_text(speech_list[i]),
-                                       j_1_gate = j_1_gate)
+                                speaker_id = current_speaker,
+                                moderator = current_moderator,
+                                speech_type = speech_types[current_speech_type],
+                                speech = xml2::xml_attr(xml2::xml_parent(speech_list[i]), "id"),
+                                class = class,
+                                content = xml2::xml_text(speech_list[i]),
+                                j_1_gate = j_1_gate)
 
       next()
     }
