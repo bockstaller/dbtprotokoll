@@ -22,6 +22,7 @@
 #'@export
 parse_protocol <- function(path, check_schema = TRUE){
   stopifnot("Please enter path as string" = is.character(path))
+  print(stringr::str_c("Parsing: ", path))
   protocol <- xml2::read_xml(path)
   if(check_schema){
     schema <- xml2::read_xml("./protokolle/dbtplenarprotokoll-schema.xsd")
