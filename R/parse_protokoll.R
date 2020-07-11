@@ -41,9 +41,9 @@ parse_protocol <- function(path, check_schema = TRUE){
 #'
 #'@param path A string containing the path to the xml files you want to parse
 #'
-#'@param start A string of the protocol you want to start with (optional)
+#'@param start Name of the protocol you want to start with (optional)
 #'
-#'@param end A string of the protocol you want to end with (optional). Must succeed start in alphabetical order
+#'@param end Name of the protocol you want to end with (optional). Must succeed start in alphabetical order
 #'
 #'@return Three tibbles in a named list:
 #'
@@ -71,7 +71,7 @@ parse_protocols <- function(path = "protokolle", start = NULL, end = NULL){
     }
   }
 
-  #remove everything after start
+  #remove everything after end
   if(!is.null(end)){
     while(length(protocols) >= 1 && protocols[length(protocols)] != end){
       protocols <- protocols[1:length(protocols)-1]
