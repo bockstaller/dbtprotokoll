@@ -54,24 +54,25 @@ paragraph_list <- function(protocol){
     if (xml2::xml_name(speech_list[i]) == "p"){
       class <- xml2::xml_attr(speech_list[i], "klasse")
 
-      # in case of a new speaker
-      # we reset the moderator, save the speaker id and change some modes
-      # we do not append to the paragraph list
-      if (class == "redner"){
-        current_moderator <- NA
-        current_speaker <- xml2::xml_attr(xml2::xml_child(speech_list[i], "redner"), "id")
-        current_speech_type <- 2
-        j_1_gate <- FALSE
+      if (!is.na(class)){
+        # in case of a new speaker
+        # we reset the moderator, save the speaker id and change some modes
+        # we do not append to the paragraph list
+        if ("redner" == class){
+          current_moderator <- NA
+          current_speaker <- xml2::xml_attr(xml2::xml_child(speech_list[i], "redner"), "id")
+          current_speech_type <- 2
+          j_1_gate <- FALSE
 
-        next()
+          next()
+        }
+
+        # we set J_1 gate after each encounter to check if we have any paragraphs which aren't
+        # led on by a J_1 tag
+        if (class == "J_1"){
+          j_1_gate <- TRUE
+        }
       }
-
-      # we set J_1 gate after each encounter to check if we have any paragraphs which aren't
-      # led on by a J_1 tag
-      if (class == "J_1"){
-        j_1_gate <- TRUE
-      }
-
 
       paragraph_df <- tibble::add_row(paragraph_df,
                                       id = i,
@@ -96,7 +97,7 @@ paragraph_list <- function(protocol){
 }
 
 #testing
-#x <- read_xml("./protokolle/19007-data.xml")
+#x <- xml2::read_xml("./protokolle/19115-data.xml")
 
 #paragraphen <- paragraph_list(x)
 
