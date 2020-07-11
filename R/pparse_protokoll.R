@@ -67,9 +67,7 @@ pparse_protocols <- function(path = "protokolle", start = NULL, end = NULL){
   paths <- lapply(protocols, create_file_path)
 
   cl <- cluster()
-  ptm <- proc.time()
   parsed_protocols <- parallel::parLapply(cl, paths, dbtprotokoll::parse_protocol)
-  print(proc.time() - ptm)
   parallel::stopCluster(cl)
 
   #merge protocols
@@ -77,13 +75,11 @@ pparse_protocols <- function(path = "protokolle", start = NULL, end = NULL){
                       "paragraphs"=tibble::tibble(),
                       "comments"=tibble::tibble())
 
-  ptm1 <- proc.time()
   for(protocol in parsed_protocols){
     for(j in 1:3){
       protocolstb[[j]] <- dplyr::bind_rows(protocolstb[[j]], protocol[[j]])
     }
   }
-  print(proc.time() - ptm1)
 
   #tidy speakers
   protocolstb[[1]] <- dplyr::distinct(protocolstb[[1]])
