@@ -6,6 +6,7 @@ speakers <- function(protokoll){
   speakerlist <- xml2::xml_find_all(protokoll, ".//rednerliste")
   speaker <- xml2::xml_find_all(speakerlist, ".//redner")
   speakertbs <- sapply(speaker, name_to_tibble)
+  speakertbs <- sapply(speakertbs, unify_fractions)
 
   #combine single tibbles to one big tibble
   speakertb <- speakertbs[1]
@@ -14,6 +15,8 @@ speakers <- function(protokoll){
     speakertb <- dplyr::bind_rows(speakertb, speakertbs[[i]])
     i <- i + 1
   }
+
+
 
   #bring tibble in neat order, but be careful because of possibility of missing "namenszusatz"-column
   if("namenszusatz" %in% colnames(speakertb)){
@@ -29,3 +32,17 @@ name_to_tibble <- function(speaker){
   dplyr::mutate(tidyr::pivot_wider(tibble::enframe(unlist(xml2::as_list(xml2::xml_find_all(speaker, ".//name")))),
                                    names_from = name, values_from = value), id = xml2::xml_attr(speaker, "id"))
 }
+
+#clean up fractions
+unify_fractions <- function(speaker_tbl){
+  if("fraktion" %in% colnames(speaker_tbl)){
+    if (speaker_tbl$fraktion == "	BÜNDNIS 90/"){
+      speaker_tbl$fraktion <- "BÜNDNIS 90/DIE GRÜNEN"
+    }
+    speaker_tbl$fraktion <- stringr::str_replace_all(speaker_tbl$fraktion, " ", "")
+    speaker_tbl$fraktion <- stringr::str_to_lower(speaker_tbl$fraktion)
+  }
+  return(speaker_tbl)
+}
+
+
