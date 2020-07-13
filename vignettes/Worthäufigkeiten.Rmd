@@ -1,0 +1,85 @@
+---
+title: "Stimmung"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Stimmung}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(dbtprotokoll)
+library(tidytext)
+library(stopwords)
+library(ggplot2)
+library(tidyr)
+library(tibble)
+library(dplyr)
+```
+
+We start by loading a protocol dataset consisting out of previously parsed xml-protocols from disk into our global environment.
+
+```{r}
+load("dataset.RData")
+```
+
+# Enriching and tyding data
+
+We join our paragraphs- and speaker-tibbles by their speaker-id before tidying up the data.
+Tidying up this dataset means pivoting the speech content in a way, that every row contains only one word of a speech.
+This process blows up the row count from ~250.000 rows up to 14.100.000 rows, which makes this sequence of steps necessary.
+
+
+```{r}
+speech <- protocols$paragraphs
+
+# we have to clean up protocols$speakers ids, there are some ids which are used multiple times, 
+speech_and_speaker <- merge(x = protocols$paragraphs, y = protocols$speakers, by.x = "speaker_id", by.y = "id", all.x = TRUE) 
+
+tidy_speeches <- speech_and_speaker %>% 
+  unnest_tokens(word, content)
+```
+
+# Word occurences
+
+We remove common stop words, as provided by the stopwords package, from the speeches.
+We count the occurences and graph them in a simple stacked graph.
+
+```{r}
+stop_german <- data.frame(word = stopwords::stopwords("german", source = "stopwords-iso"), stringsAsFactors = FALSE)
+
+tidy_speeches_no_stop <- tidy_speeches %>% anti_join(stop_german, by = c("word"))
+
+word_occurences <- tidy_speeches_no_stop %>%
+  count(word, sort = TRUE)
+
+word_occurences %>%
+  top_n(40) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n)) +
+  geom_col() +
+  xlab(NULL) +
+  coord_flip()
+```
+
+# Word occurences per party
+
+Now we want to count how often words are used per party.
+
+```{r}
+
+word_occurences_per_party <- tidy_speeches_no_stop %>%
+  select(fraktion, word) %>%
+  add_column(count = 1L) %>%
+  drop_na(fraktion) %>%
+  count(word, fraktion, sort=TRUE)
+
+```
+
