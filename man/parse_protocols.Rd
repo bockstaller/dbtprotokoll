@@ -2,25 +2,32 @@
 % Please edit documentation in R/parse_protokoll.R
 \name{parse_protocols}
 \alias{parse_protocols}
-\title{Parse all plenary protocols from xml format to tibbles}
+\title{Parse all plenary protocols from xml format to tibbles in parallel}
 \usage{
-parse_protocols(path = "protokolle", start = NULL, end = NULL)
+parse_protocols(
+  path = "protokolle",
+  start = NULL,
+  end = NULL,
+  instance_count = NULL
+)
 }
 \arguments{
 \item{path}{A string containing the path to the xml files you want to parse}
 
-\item{start}{A string of the protocol you want to start with (optional)}
+\item{start}{Name of the protocol you want to start with (optional)}
 
-\item{end}{A string of the protocol you want to end with (optional). Must succed start in alphabetical order}
+\item{end}{Name of the protocol you want to end with (optional). Must succeed start in alphabetical order}
+
+\item{instance_count}{Specifies the number of r instances that will be used to parse the protocols. The default is the machines core count.}
 }
 \value{
 Three tibbles in a named list:
 
-"rednerliste": A tibble of all speaking politicians containing speaker id, name, party and similar information.
+"speakers": A tibble of all speaking politicians containing speaker id, name, party and similar information.
 
-"absatzliste": A tibble of all paragraphs in speeches, containing speaker id, speech id and content of the paragraph.
+"paragraphs": A tibble of all paragraphs in speeches, containing speaker id, speech id and content of the paragraph.
 
-"kommentarliste": A tibble of all comments given during speeches and about reactions to speeches, containing speech id and comment id as well as content of the comment.
+"comments": A tibble of all comments given during speeches and about reactions to speeches, containing speech id and comment id as well as content of the comment.
 }
 \description{
 Uses the xml structure of a plenary protocols to create three tibbles for further data analysis with the help of parse_protocol().
