@@ -1,3 +1,37 @@
+#'Parse a plenary protocol from xml format to tibbles
+#'
+#'Uses the xml structure of a plenary protocol to create three tibbles for further data analysis.
+#'
+#'@param path A string containing the path to the xml file you want to parse
+#'@param check_schema A logical value indicating whether you want to check compatibility of the xml schema used in your xml file.
+#
+#'
+#'@return Three tibbles in a named list:
+#'
+#'"speakers": A tibble of all speaking politicians containing speaker id, name, party and similar information.
+#'
+#'"paragraphs": A tibble of all paragraphs in speeches, containing speaker id, speech id and content of the paragraph.
+#'
+#'"comments": A tibble of all comments given during speeches and about reactions to speeches, containing speech id and comment id as well as content of the comment.
+#'
+#'@examples
+#'parse_protocol("./protokolle/19007-data.xml")
+#'
+#'@export
+parse_protocol <- function(path, check_schema = TRUE){
+  stopifnot("Please enter path as string" = is.character(path))
+  print(stringr::str_c("Parsing: ", path))
+  protocol <- xml2::read_xml(path)
+  if(check_schema){
+    schema <- xml2::read_xml("./protokolle/dbtplenarprotokoll-schema.xsd")
+    stopifnot("XML Schema is not as expected." = xml2::xml_validate(protocol, schema))
+  }
+
+  speakertb <- speakers(protocol)
+  commenttb <- comment_list(protocol)
+  paragraphtb <- paragraph_list(protocol)
+  return(list("speakers"=speakertb,"paragraphs"=paragraphtb, "comments"=commenttb))
+}
 
 
 
@@ -11,6 +45,8 @@
 #'
 #'@param end Name of the protocol you want to end with (optional). Must succeed start in alphabetical order
 #'
+#'@param instance_count Specifies the number of r instances that will be used to parse the protocols. The default is the machines core count.
+#'
 #'@return Three tibbles in a named list:
 #'
 #'"speakers": A tibble of all speaking politicians containing speaker id, name, party and similar information.
@@ -23,7 +59,7 @@
 #'parse_protocols(start = "19001-data.xml", end = "19003-data.xml")
 #'
 #'@export
-pparse_protocols <- function(path = "protokolle", start = NULL, end = NULL){
+parse_protocols <- function(path = "protokolle", start = NULL, end = NULL, instance_count = NULL){
   protocols <- dir(path)
   protocols <- protocols[endsWith(protocols, ".xml")]
 
@@ -47,8 +83,6 @@ pparse_protocols <- function(path = "protokolle", start = NULL, end = NULL){
     }
   }
 
-
-
   cluster = function (n = NULL)
   {
     if (is.null(n)) {
@@ -66,9 +100,9 @@ pparse_protocols <- function(path = "protokolle", start = NULL, end = NULL){
 
   paths <- lapply(protocols, create_file_path)
 
-  cl <- cluster()
+  cl <- cluster(instance_count)
+  on.exit(parallel::stopCluster(cl))
   parsed_protocols <- parallel::parLapply(cl, paths, dbtprotokoll::parse_protocol)
-  parallel::stopCluster(cl)
 
   #merge protocols
   protocolstb <- list("speakers"=tibble::tibble(),
