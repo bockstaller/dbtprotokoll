@@ -36,11 +36,12 @@ name_to_tibble <- function(speaker){
 #clean up fractions
 unify_fractions <- function(speaker_tbl){
   if("fraktion" %in% colnames(speaker_tbl)){
-    if (speaker_tbl$fraktion == "	BÜNDNIS 90/"){
-      speaker_tbl$fraktion <- "BÜNDNIS 90/DIE GRÜNEN"
-    }
-    speaker_tbl$fraktion <- stringr::str_replace_all(speaker_tbl$fraktion, " ", "")
+    speaker_tbl$fraktion <- gsub("\\s", "", speaker_tbl$fraktion)
     speaker_tbl$fraktion <- stringr::str_to_lower(speaker_tbl$fraktion)
+    if (speaker_tbl$fraktion == "bündnis90/"){
+      speaker_tbl$fraktion <- "bündnis90/diegrünen"
+    }
+
   }
   return(speaker_tbl)
 }
