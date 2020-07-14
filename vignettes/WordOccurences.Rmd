@@ -1,5 +1,5 @@
 ---
-title: "Stimmung"
+title: "WordOccurences"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Stimmung}

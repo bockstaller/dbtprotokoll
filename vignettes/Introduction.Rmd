@@ -17,32 +17,39 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(dbtprotokoll)
 ```
+# Introduction
 
-
-# Overview Open Data Bundestag
+## Overview Open Data Bundestag
 
 The plenary meetings of the German Bundestags are protocoled by a team of stenographs.
-They 
+These protocols get published as .pdf, .txt, and thanks to the open data initiative of the Bundestag as a .xml file as well. 
 
-![First page of a plenary protocol](images/introduction/Protokoll1.png)
-![Protocoled speech](images/introduction/Protokoll2.png)
+![First page of a plenary protocol](images/introduction/Protokoll1.png){width=45%}
+![Protocoled speech](images/introduction/Protokoll2.png){width=45%}
 
-![Screenshot of the Open Data Website of the German Bundestag](images/introduction/OpenData.png)
+![Screenshot of the Open Data Website of the German Bundestag](images/introduction/OpenData.png){width=60%}
 
-# Downloading the protocols
+## Downloading the protocols
 
+##Parsing the protocols
 
-# Open protocol with xml2
+### Open protocol with xml2
 
 Highlight main components (speakerlist and speeches)
 
 
-# Parse a single protocol with dbtprotokoll
+### Parse a single protocol with dbtprotokoll
 
-# Explain tibble structure
+### Explain tibble structure
 
-# Parse the complete dataset
+### Parse the complete dataset
 
-# Store and restore the dataset with load
+### Store and restore the dataset with load
 
-# Run a simple analysis
+## Running analysis
+
+### Run a simple analysis
+
+### Run complex analysis
+
+[Wordusage](WordOccurences.html)
