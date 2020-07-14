@@ -60,7 +60,11 @@ parse_protocol <- function(path, check_schema = TRUE){
 #'
 #'@export
 parse_protocols <- function(path = "protokolle", start = NULL, end = NULL, instance_count = NULL){
+  stopifnot("Please enter path as string" = is.character(path))
   protocols <- dir(path)
+  if(identical(protocols, character(0))){
+    stop(path, " was not found of is empty.")
+  }
   protocols <- protocols[endsWith(protocols, ".xml")]
 
   #remove everything before start
@@ -116,7 +120,7 @@ parse_protocols <- function(path = "protokolle", start = NULL, end = NULL, insta
   }
 
   #tidy speakers
-  protocolstb[[1]] <- dplyr::distinct(protocolstb[[1]])
+  protocolstb[[1]] <- clean_speakers(dplyr::distinct(protocolstb[[1]]))
 
   return(protocolstb)
 }
