@@ -40,6 +40,12 @@ Highlight main components (speakerlist and speeches)
 
 ### Parse a single protocol with dbtprotokoll
 
+To parse a single protocol with dbtprotokoll, the function parse_protocol is used. Its arguments are a string for the file path and the optional "check_schema" argument. If check_schema is TRUE (its default value), the xml2-function "xml_validate" will be used to validate that the xml document given is indeed written in the correct xml schema. To check this, we downloaded the file "dbtplenarprotokolle-data.dtd and converted it into an xsd file.
+If the schema is correct (or check_schema is FALSE), the function will read the xml file given in the path-argument and start extracting information from the xml. It will then return a named list of three tibbles containing information about the plenary meeting:
+1. "speakers": A tibble containing speaker ID, full name, party and possibly roles of every person that held a speech at this plenary meeting.
+1. "paragraphs": A tibble containing all paragraphs from all speeches held at the plenary meeting. The individual speech ID and speaker ID of the speaker are also found in this tibble.
+1. "comments": A tibble containing all comments made in all speeches as well as the speech ID of the speech the comment was made in. Comments in this case are not only interjections by other politicians, but also include applause, laughing and amusement within different partys.
+
 ### Explain tibble structure
 
 ### Parse the complete dataset
