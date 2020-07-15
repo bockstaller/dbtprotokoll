@@ -1,5 +1,3 @@
-
-
 #'Parse a plenary protocol from xml format to tibbles
 #'
 #'Uses the xml structure of a plenary protocol to create three tibbles for further data analysis.
@@ -36,7 +34,8 @@ parse_protocol <- function(path, check_schema = TRUE){
 }
 
 
-#'Parse all plenary protocols from xml format to tibbles
+
+#'Parse all plenary protocols from xml format to tibbles in parallel
 #'
 #'Uses the xml structure of a plenary protocols to create three tibbles for further data analysis with the help of parse_protocol().
 #'
@@ -45,6 +44,8 @@ parse_protocol <- function(path, check_schema = TRUE){
 #'@param start Name of the protocol you want to start with (optional)
 #'
 #'@param end Name of the protocol you want to end with (optional). Must succeed start in alphabetical order
+#'
+#'@param instance_count Specifies the number of r instances that will be used to parse the protocols. The default is the machines core count.
 #'
 #'@return Three tibbles in a named list:
 #'
@@ -58,8 +59,12 @@ parse_protocol <- function(path, check_schema = TRUE){
 #'parse_protocols(start = "19001-data.xml", end = "19003-data.xml")
 #'
 #'@export
-parse_protocols <- function(path = "protokolle", start = NULL, end = NULL){
+parse_protocols <- function(path = "protokolle", start = NULL, end = NULL, instance_count = NULL){
+  stopifnot("Please enter path as string" = is.character(path))
   protocols <- dir(path)
+  if(identical(protocols, character(0))){
+    stop(path, " was not found of is empty.")
+  }
   protocols <- protocols[endsWith(protocols, ".xml")]
 
   #remove everything before start
@@ -82,19 +87,40 @@ parse_protocols <- function(path = "protokolle", start = NULL, end = NULL){
     }
   }
 
+  cluster = function (n = NULL)
+  {
+    if (is.null(n)) {
+      n <- parallel::detectCores()
+    }
+    parallel::makeCluster(n, setup_strategy = "sequential", outfile="")
+  }
+
+
+  create_file_path <- function(protocol){
+    return(stringr::str_c(path, "/", protocol))
+  }
+
+
+
+  paths <- lapply(protocols, create_file_path)
+
+  cl <- cluster(instance_count)
+  on.exit(parallel::stopCluster(cl))
+  parsed_protocols <- parallel::parLapply(cl, paths, dbtprotokoll::parse_protocol)
+
   #merge protocols
   protocolstb <- list("speakers"=tibble::tibble(),
                       "paragraphs"=tibble::tibble(),
                       "comments"=tibble::tibble())
-  for(protocol in protocols){
-    currenttb <- parse_protocol(stringr::str_c(path, "/", protocol))
+
+  for(protocol in parsed_protocols){
     for(j in 1:3){
-      protocolstb[[j]] <- dplyr::bind_rows(protocolstb[[j]], currenttb[[j]])
+      protocolstb[[j]] <- dplyr::bind_rows(protocolstb[[j]], protocol[[j]])
     }
   }
 
   #tidy speakers
-  protocolstb[[1]] <- dplyr::distinct(protocolstb[[1]])
+  protocolstb[[1]] <- clean_speakers(dplyr::distinct(protocolstb[[1]]))
 
   return(protocolstb)
 }

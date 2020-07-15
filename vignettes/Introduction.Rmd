@@ -1,0 +1,55 @@
+---
+title: "Introduction"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(dbtprotokoll)
+```
+# Introduction
+
+## Overview Open Data Bundestag
+
+The plenary meetings of the German Bundestags are protocoled by a team of stenographs.
+These protocols get published as .pdf, .txt, and thanks to the open data initiative of the Bundestag as a .xml file as well. 
+
+![First page of a plenary protocol](images/introduction/Protokoll1.png){width=45%}
+![Protocoled speech](images/introduction/Protokoll2.png){width=45%}
+
+![Screenshot of the Open Data Website of the German Bundestag](images/introduction/OpenData.png){width=60%}
+
+## Downloading the protocols
+
+##Parsing the protocols
+
+### Open protocol with xml2
+
+Highlight main components (speakerlist and speeches)
+
+
+### Parse a single protocol with dbtprotokoll
+
+### Explain tibble structure
+
+### Parse the complete dataset
+
+### Store and restore the dataset with load
+
+## Running analysis
+
+### Run a simple analysis
+
+### Run complex analysis
+
+[Wordusage](WordOccurences.html)
