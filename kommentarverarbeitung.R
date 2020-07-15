@@ -4,14 +4,14 @@ library(dbtprotokoll)
 library(ggplot2)
 
 
-
-bspprotokoll <- parse_protocols(start = "19001-data.xml", end = "19050-data.xml")
+bspprotokoll <- parse_protocols(start = "19001-data.xml", end = "19020-data.xml")
 kommentare <- bspprotokoll$comments
 rednerInnen <- bspprotokoll$speakers
 absaetze <- bspprotokoll$paragraphs
 
 rednerInnen$fraktion <- str_trim(rednerInnen$fraktion)
 rednerInnen$fraktion <- str_replace(rednerInnen$fraktion, "BÜNDNIS 90/.*", "BÜNDNIS 90/DIE GRÜNEN")
+rednerInnen$fraktion <- replace_na(rednerInnen$fraktion, "Andere")
 
 
 kommentare %>%
@@ -99,7 +99,20 @@ bflwerwem_anteile %>%
 bfl_antl <- select(bfl_antl, `redende fraktion`, 'CDU/CSU' = anteilig_CDU, 'SPD' = anteilig_SPD, 'FDP' = anteilig_FDP, 'GRÜNE' = anteilig_GRÜNE, 'AfD' = anteilig_AfD, 'LINKE' = anteilig_LINKE )
 bfl_antl <- pivot_longer(bfl_antl, `CDU/CSU`:LINKE, names_to = 'beifallgebend', values_to = 'anteile')
 
-ggplot(bfl_antl, mapping= aes(x=beifallgebend, y=anteile, fill= `redende fraktion`)) + geom_bar(stat="identity")
+#let's fix those colors!
+party_colors <-c(
+  SPD = "#DF0B25",
+  CSU = "#87bbe6",
+  "CDU/CSU" = "#000000",
+  AfD = "#1A9FDD",
+  "DIE LINKE" = "#BC3475",
+  "BÜNDNIS 90/DIE GRÜNEN" = "#4A932B",
+  FDP = "#FEEB34",
+  "zur Geschäftsordnung" = "#999999",
+  "fraktionslos" = "#61420e",
+  "Andere" = "#ed9e1f")
+
+ggplot(bfl_antl, mapping= aes(x=beifallgebend, y=anteile, fill= `redende fraktion`)) + geom_bar(stat="identity") + scale_fill_manual(values=party_colors)
 
 ####################
 kommentare %>%
