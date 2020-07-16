@@ -19,7 +19,8 @@ download_protocols <- function(base_url = "https://www.bundestag.de", registry_u
   stopifnot("Please enter registry_url as string" = is.character(registry_url))
   stopifnot("Please enter directory as string" = is.character(directory))
   links <- get_protocol_links(base_url = base_url, registry_url = registry_url)
-  download_files(links, directory = directory, base_url = base_url)
+  paths <- download_files(links, directory = directory)
+  return(paths)
 }
 
 
@@ -51,10 +52,10 @@ get_protocol_links <- function(base_url = "https://www.bundestag.de", registry_u
 
   while(TRUE){
     print(offset)
-    url <- stringr::paste(base_url, registry_url, "?", "limit=", limit, "&", "offset=", offset, sep="")
+    url <- paste(base_url, registry_url, "?", "limit=", limit, "&", "offset=", offset, sep="")
 
     suppressWarnings({
-      html <- stringr::paste(readLines(url), collapse="\n")
+      html <- paste(readLines(url), collapse="\n")
     })
     matched <- stringr::str_match_all(html, "href=\"(.*?)\"")[[1]][, 2]
 
@@ -97,13 +98,16 @@ download_files <- function(links, directory = "./protokolle"){
 
   dir.create(file.path(directory), showWarnings = FALSE)
 
+  paths <- vector()
+
   for (link in links){
     print(stringr::str_c("Downloading: ", link))
-    filename <- stringr::str_extract(link, regex("\\d{5}-data.xml$"))
-    filepath <- stringr::paste(directory, "/" ,filename, sep="")
-    download_url <- stringr::paste(base_url, link, sep="")
-    download.file(download_url, filepath)
+    filename <- stringr::str_extract(link, stringr::regex("\\d{5}-data.xml$"))
+    filepath <- paste(directory, "/" ,filename, sep="")
+    paths <- c(paths, filepath)
+    download.file(link, filepath)
   }
+  return(paths)
 }
 
 
