@@ -1,6 +1,3 @@
-library("stringr")
-
-
 #'Wraps get_protocol_links and download_files to get all protocol files in a single call
 #'
 #'This function gets all download links and downloads the linked files into the specified folder
@@ -48,12 +45,12 @@ get_protocol_links <- function(base_url = "https://www.bundestag.de", registry_u
 
   while(TRUE){
     print(offset)
-    url <- paste(base_url, registry_url, "?", "limit=", limit, "&", "offset=", offset, sep="")
+    url <- stringr::paste(base_url, registry_url, "?", "limit=", limit, "&", "offset=", offset, sep="")
 
     suppressWarnings({
-      html <- paste(readLines(url), collapse="\n")
+      html <- stringr::paste(readLines(url), collapse="\n")
     })
-    matched <- str_match_all(html, "href=\"(.*?)\"")[[1]][, 2]
+    matched <- stringr::str_match_all(html, "href=\"(.*?)\"")[[1]][, 2]
 
     if (length(matched)==0){
       break
@@ -93,9 +90,9 @@ download_files <- function(links, directory = "./protokolle"){
 
   for (link in links){
     print(stringr::str_c("Downloading: ", link))
-    filename <- str_extract(link, regex("\\d{5}-data.xml$"))
-    filepath <- paste(directory, "/" ,filename, sep="")
-    download_url <- paste(base_url, link, sep="")
+    filename <- stringr::str_extract(link, regex("\\d{5}-data.xml$"))
+    filepath <- stringr::paste(directory, "/" ,filename, sep="")
+    download_url <- stringr::paste(base_url, link, sep="")
     download.file(download_url, filepath)
   }
 }
