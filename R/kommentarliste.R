@@ -12,21 +12,37 @@ comment_list <- function(protocol){
   #create data frame of fitting shape to collect comments
   commentdf <- data.frame(id = integer(),
                             paragraph_id = character(),
-                            content = character()
+                            content = character(),
+                            speaker_id= character()
   )
 
   #filling the data frame with content from comment list
   j <- 1
   for (i in comments) { #for every comment
     curspeech <- xml2::xml_parent(i) #find current speech
+
+    speaker_id <- NA
+    speaker_id <- xml2::xml_attr(xml2::xml_find_all(curspeech, ".//p/redner")[1], "id")
+
+
     speechid <- xml2::xml_attr(curspeech, "id") #retrieve id of current speech
-    commentdf <- tibble::add_row(commentdf,id=j, paragraph_id=speechid, content=xml2::xml_text(i))
+    commentdf <- tibble::add_row(commentdf,id=j, paragraph_id=speechid, content=xml2::xml_text(i), speaker_id=speaker_id)
     j <- j+1
   }
   #transform data frame to tibble for easier analysis later
   commenttb <- tibble::as_tibble(commentdf)
+
+  commenttb <- clean_comments(commenttb)
+
   return(commenttb)
 
+}
+
+clean_comments <- function(commenttb){
+  commenttb <- commenttb %>% dplyr::filter(!is.na(speaker_id))
+  commenttb <- commenttb %>% dplyr::filter(speaker_id != as.character(10000L))
+  commenttb <- commenttb %>% dplyr::filter(speaker_id != "")
+  return(commenttb %>% dplyr::select(-speaker_id))
 }
 
 #testing

@@ -8,6 +8,7 @@
 #'
 #' @examples
 #' paragraph_list(read_xml("./protokolle/19007-data.xml"))
+#' @importFrom magrittr %>%
 paragraph_list <- function(protocol){
 
   #create data frame of fitting shape to collect comments
@@ -43,7 +44,6 @@ paragraph_list <- function(protocol){
     # which gets deduplicated later and setting some modes
     # we do not reset the current speaker, this way we have a chance to know who gets moderated
     # we do not append to the paragraph list
-
     if (xml2::xml_name(speech_list[i]) == "name"){
       current_moderator <- xml2::xml_text(speech_list[i])
       current_speech_type <- 3
@@ -91,9 +91,17 @@ paragraph_list <- function(protocol){
 
   #transform data frame to tibble for easier analysis later
   paragraph_tb <- tibble::as_tibble(paragraph_df)
+  paragraph_tb <- clean_paragraphs(paragraph_tb)
 
   return(paragraph_tb)
 
+}
+
+clean_paragraphs <- function(paragraph_tb){
+  paragraph_tb <- paragraph_tb %>% dplyr::filter(!is.na(speaker_id))
+  paragraph_tb <- paragraph_tb %>% dplyr::filter(speaker_id != as.character(10000L))
+  paragraph_tb <- paragraph_tb %>% dplyr::filter(speaker_id != "")
+  return(paragraph_tb)
 }
 
 #testing
