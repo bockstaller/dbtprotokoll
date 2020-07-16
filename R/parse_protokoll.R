@@ -47,6 +47,8 @@ parse_protocol <- function(path, check_schema = TRUE){
 #'
 #'@param instance_count Specifies the number of r instances that will be used to parse the protocols. The default is the machines core count.
 #'
+#'@param check_schema A logical value indicating whether you want to check compatibility of the xml schema used in your xml file.
+#'
 #'@return Three tibbles in a named list:
 #'
 #'"speakers": A tibble of all speaking politicians containing speaker id, name, party and similar information.
@@ -59,7 +61,7 @@ parse_protocol <- function(path, check_schema = TRUE){
 #'parse_protocols(start = "19001-data.xml", end = "19003-data.xml")
 #'
 #'@export
-parse_protocols <- function(path = "protokolle", start = NULL, end = NULL, instance_count = NULL){
+parse_protocols <- function(path = "protokolle", start = NULL, end = NULL, instance_count = NULL, check_schema=TRUE){
   stopifnot("Please enter path as string" = is.character(path))
   protocols <- dir(path)
   if(identical(protocols, character(0))){
@@ -106,7 +108,7 @@ parse_protocols <- function(path = "protokolle", start = NULL, end = NULL, insta
 
   cl <- cluster(instance_count)
   on.exit(parallel::stopCluster(cl))
-  parsed_protocols <- parallel::parLapply(cl, paths, dbtprotokoll::parse_protocol)
+  parsed_protocols <- parallel::parLapply(cl, paths, dbtprotokoll::parse_protocol, check_schema=check_schema)
 
   #merge protocols
   protocolstb <- list("speakers"=tibble::tibble(),
