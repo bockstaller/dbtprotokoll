@@ -30,12 +30,34 @@ These protocols get published as .pdf, .txt, and thanks to the open data initiat
 ![Screenshot of the Open Data Website of the German Bundestag](images/introduction/OpenData.png){width=60%}
 
 ## Downloading the protocols
+```{r warning=FALSE, include=FALSE, results='hide'}
+paths <- download_protocols()
+```
+```{r}
+print(paths[1:10])
+```
 
 ## Parsing the protocols
-
 ### Open protocol with xml2
 
+```{r}
+protocol <- xml2::read_xml(paths[1])
+
+protocol
+```
+
+
 Highlight main components (speakerlist and speeches)
+
+
+```{r}
+print(xml2::xml_find_all(protocol, ".//rede")[[1]])
+```
+
+
+```{r}
+print(xml2::xml_find_all(protocol, ".//rednerliste")[[1]])
+```
 
 
 ### Parse a single protocol with dbtprotokoll
@@ -43,17 +65,50 @@ Highlight main components (speakerlist and speeches)
 To parse a single protocol with dbtprotokoll, the function parse_protocol is used. Its arguments are a string for the file path and the optional "check_schema" argument. If check_schema is TRUE (its default value), the xml2-function "xml_validate" will be used to validate that the xml document given is indeed written in the correct xml schema. To check this, we downloaded the file "dbtplenarprotokolle-data.dtd and converted it into an xsd file.
 If the schema is correct (or check_schema is FALSE), the function will read the xml file given in the path-argument and start extracting information from the xml. It will then return a named list of three tibbles containing information about the plenary meeting:
 
-1. "speakers": A tibble containing speaker ID, full name, party and possibly roles of every person that held a speech at this plenary meeting.
-
-1. "paragraphs": A tibble containing all paragraphs from all speeches held at the plenary meeting. The individual speech ID and speaker ID of the speaker are also found in this tibble.
-
-1. "comments": A tibble containing all comments made in all speeches as well as the speech ID of the speech the comment was made in. Comments in this case are not only interjections by other politicians, but also include applause, laughing and amusement within different partys.
+```{r}
+parsed_protocol <- parse_protocol(paths[1], check_schema = FALSE)
+print(parsed_protocol)
+```
 
 ### Explain tibble structure
 
-### Parse the complete dataset
 
-### Store and restore the dataset with load
+
+1. "speakers": A tibble containing speaker ID, full name, party and possibly roles of every person that held a speech at this plenary meeting.
+```{r}
+print(parsed_protocol$speakers)
+```
+
+1. "paragraphs": A tibble containing all paragraphs from all speeches held at the plenary meeting. The individual speech ID and speaker ID of the speaker are also found in this tibble.
+```{r}
+print(parsed_protocol$paragraphs)
+```
+
+1. "comments": A tibble containing all comments made in all speeches as well as the speech ID of the speech the comment was made in. Comments in this case are not only interjections by other politicians, but also include applause, laughing and amusement within different partys.
+```{r}
+print(parsed_protocol$comments)
+```
+
+
+### Parse the complete dataset
+```{r}
+parsed_protocols <- dbtprotokoll::parse_protocols(start = "19001-data.xml", end = "19010-data.xml", instance_count = 4, check_schema = FALSE)
+print(parsed_protocols)
+```
+
+### Store and restore the dataset with save and load
+```{r}
+save(parsed_protocols, file = "protocols.RData")
+
+rm(parsed_protocols)
+```
+
+
+```{r}
+load("./protocols.RData")
+
+print(parsed_protocols)
+```
 
 ## Running analysis
 
