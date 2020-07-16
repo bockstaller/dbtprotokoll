@@ -54,20 +54,20 @@ clean_speakers <- function(speakers){
   speakers[speakers$id == "10000", 1] <- as.character(10000+ (1:nrow(speakers[speakers$id == "10000",])))
 
   #merge rows of same person into one
-  speakers <- group_by(speakers, id) %>% mutate("anzahl" = n()) %>% arrange(desc(anzahl), id)
+  speakers <- dplyr::group_by(speakers, id) %>% dplyr::mutate("anzahl" = dplyr::n()) %>% dplyr::arrange(dplyr::desc(anzahl), id)
   for(rownum in 1:nrow(speakers)){
     if(speakers$anzahl[rownum] > 1){
       for(i in 1:(speakers$anzahl[rownum] - 1)){
-        speakers[rownum,1:(length(speakers)-1)] <- full_join(speakers[rownum,], speakers[rownum + i,], by = "id") %>%
-          transmute(id,
-                    "titel" = coalesce(.$titel.x, .$titel.y),
-                    vorname = coalesce(.$vorname.x, .$vorname.y),
-                    nachname = coalesce(.$nachname.x, .$nachname.y),
-                    rolle.rolle_lang = coalesce(.$rolle.rolle_lang.x, .$rolle.rolle_lang.y),
-                    rolle.rolle_kurz = coalesce(.$rolle.rolle_kurz.x, .$rolle.rolle_kurz.y),
-                    ortszusatz = coalesce(.$ortszusatz.x, .$ortszusatz.y),
-                    fraktion = coalesce(.$fraktion.x, .$fraktion.y),
-                    namenszusatz = coalesce(.$namenszusatz.x, .$namenszusatz.y))
+        speakers[rownum,1:(length(speakers)-1)] <- dplyr::full_join(speakers[rownum,], speakers[rownum + i,], by = "id") %>%
+          dplyr::transmute(id,
+                    "titel" = dplyr::coalesce(.$titel.x, .$titel.y),
+                    vorname = dplyr::coalesce(.$vorname.x, .$vorname.y),
+                    nachname = dplyr::coalesce(.$nachname.x, .$nachname.y),
+                    rolle.rolle_lang = dplyr::coalesce(.$rolle.rolle_lang.x, .$rolle.rolle_lang.y),
+                    rolle.rolle_kurz = dplyr::coalesce(.$rolle.rolle_kurz.x, .$rolle.rolle_kurz.y),
+                    ortszusatz = dplyr::coalesce(.$ortszusatz.x, .$ortszusatz.y),
+                    fraktion = dplyr::coalesce(.$fraktion.x, .$fraktion.y),
+                    namenszusatz = dplyr::coalesce(.$namenszusatz.x, .$namenszusatz.y))
       }
       #remove next entries of group
       speakers <- speakers[-(rownum + (1:(speakers$anzahl[rownum]-1))),]
