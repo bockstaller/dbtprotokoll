@@ -15,6 +15,9 @@
 #'
 #'@export
 download_protocols <- function(base_url = "https://www.bundestag.de", registry_url = "/ajax/filterlist/de/services/opendata/543410-543410", directory = "./protokolle"){
+  stopifnot("Please enter base_url as string" = is.character(base_url))
+  stopifnot("Please enter registry_url as string" = is.character(registry_url))
+  stopifnot("Please enter directory as string" = is.character(directory))
   links <- get_protocol_links(base_url = base_url, registry_url = registry_url)
   download_files(links, directory = directory, base_url = base_url)
 }
@@ -39,6 +42,9 @@ download_protocols <- function(base_url = "https://www.bundestag.de", registry_u
 #'
 #'@export
 get_protocol_links <- function(base_url = "https://www.bundestag.de", registry_url = "/ajax/filterlist/de/services/opendata/543410-543410"){
+  stopifnot("Please enter base_url as string" = is.character(base_url))
+  stopifnot("Please enter registry_url as string" = is.character(registry_url))
+
   offset <- 0
   limit <- 10
   links <- vector()
@@ -85,6 +91,9 @@ get_protocol_links <- function(base_url = "https://www.bundestag.de", registry_u
 #'
 #'@export
 download_files <- function(links, directory = "./protokolle"){
+  stopifnot("Please enter links as strings" = is.character(links))
+  stopifnot("Please enter links as vector" = is.vector(links))
+  stopifnot("Please enter directory as string" = is.character(directory))
 
   dir.create(file.path(directory), showWarnings = FALSE)
 
