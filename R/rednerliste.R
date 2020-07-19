@@ -79,7 +79,7 @@ clean_speakers <- function(speakers){
 
   #ToDo: Tidy up entries of new entries of titel, namenszusatz and rolle
 
-  return(speakers[1:(length(speakers)-1)] %>% ungroup())
+  return(speakers[1:(length(speakers)-1)] %>% dplyr::ungroup())
 }
 #redner <- full_protocol[[1]]
 #redner <- clean_speakers(redner)
