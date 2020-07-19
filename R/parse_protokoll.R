@@ -27,10 +27,10 @@ parse_protocol <- function(path, check_schema = TRUE){
     stopifnot("XML Schema is not as expected." = xml2::xml_validate(protocol, schema))
   }
 
-  speakertb <- speakers(protocol)
+  speakers_roles <- split_roles(speakers(protocol))
   commenttb <- comment_list(protocol)
   paragraphtb <- paragraph_list(protocol)
-  return(list("speakers"=speakertb,"paragraphs"=paragraphtb, "comments"=commenttb))
+  return(list("speakers"=speakers_roles[[1]],"paragraphs"=paragraphtb, "comments"=commenttb, "roles"=speakers_roles[[2]]))
 }
 
 
@@ -113,16 +113,22 @@ parse_protocols <- function(path = "protokolle", start = NULL, end = NULL, insta
   #merge protocols
   protocolstb <- list("speakers"=tibble::tibble(),
                       "paragraphs"=tibble::tibble(),
-                      "comments"=tibble::tibble())
+                      "comments"=tibble::tibble(),
+                      "roles"=tibble::tibble())
 
+  print("merging")
   for(protocol in parsed_protocols){
-    for(j in 1:3){
+    for(j in 1:4){
       protocolstb[[j]] <- dplyr::bind_rows(protocolstb[[j]], protocol[[j]])
     }
   }
 
+  print("tidying")
   #tidy speakers
-  protocolstb[[1]] <- clean_speakers(dplyr::distinct(protocolstb[[1]]))
+  #TODO!!!!!!!!!!!!!
+  #protocolstb[[1]] <- clean_speakers(dplyr::distinct(protocolstb[[1]]))
+  protocolstb[[1]] <- clean_speakers(protocolstb[[1]])
+  protocolstb[[4]] <- clean_roles(protocolstb[[4]])
 
   return(protocolstb)
 }
