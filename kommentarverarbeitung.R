@@ -3,15 +3,17 @@ library(xml2)
 library(dbtprotokoll)
 library(ggplot2)
 
+#all_prots <- parse_protocols()
+#save(all_prots, file = "data.RData")
 
-bspprotokoll <- parse_protocols(start = "19001-data.xml", end = "19020-data.xml")
+bspprotokoll <- parse_protocols(start = "19001-data.xml", end = "19050-data.xml")
 kommentare <- bspprotokoll$comments
 rednerInnen <- bspprotokoll$speakers
 absaetze <- bspprotokoll$paragraphs
 
 rednerInnen$fraktion <- str_trim(rednerInnen$fraktion)
-rednerInnen$fraktion <- str_replace(rednerInnen$fraktion, "BÜNDNIS 90/.*", "BÜNDNIS 90/DIE GRÜNEN")
-rednerInnen$fraktion <- replace_na(rednerInnen$fraktion, "Andere")
+rednerInnen$fraktion <- str_replace(rednerInnen$fraktion, "BÜNDNIS 90/.*", "bündnis90/diegrünen")
+rednerInnen$fraktion <- replace_na(rednerInnen$fraktion, "andere")
 
 
 kommentare %>%
@@ -66,7 +68,7 @@ ggplot(bflprorede, mapping= aes(x=fraktion, y=bfl_pro_rede) ) + geom_bar(stat="i
   # mutate('beifallgebend' = str_extract(content, '(?<=\\(Beifall bei der) .*|(?<=\\(Beifall beim) .*|(?<=\\(Beifall bei Abgeordneten der|s) .*')) %>%
    mutate('union' = as.integer(str_detect(content, 'CDU')), 'spd' = as.integer(str_detect(content, 'SPD')), 'fdp' = as.integer((str_detect(content, 'FDP'))), 'grüne' = as.integer(str_detect(content, 'DIE GR')), 'afd' = as.integer(str_detect(content, 'AfD')), 'linke' = as.integer(str_detect(content, 'LINKE'))) %>%
    group_by(paragraph_id) %>%
-   summarize(id, 'CDU/CSU' = sum(union), 'SPD' = sum(spd), 'FDP' = sum(fdp), 'BÜNDNIS 90/DIE GRÜNEN' = sum(grüne), 'AfD' = sum(afd), 'DIE LINKE' = sum(linke)) %>%
+   summarize(id, 'cdu/csu' = sum(union), 'spd' = sum(spd), 'fdp' = sum(fdp), 'bündnis90/diegrünen' = sum(grüne), 'afd' = sum(afd), 'dielinke' = sum(linke)) %>%
    distinct(paragraph_id, .keep_all = TRUE) -> bflwerwann
 
  #jetzt wollen wir herausfinden, wer die jeweilige Rede gehalten hat
@@ -75,7 +77,7 @@ kombitabelle <- left_join(bflwerwann, matchrede, by = c('paragraph_id' = 'speech
 rednerInnen %>%
   select(id, fraktion) -> matchredner
 #matchredner$fraktion <- str_trim(matchredner$fraktion)
-#matchredner$fraktion <- str_replace(matchredner$fraktion, "BÜNDNIS 90/.*", "BÜNDNIS 90/DIE GRÜNEN")
+#matchredner$fraktion <- str_replace(matchredner$fraktion, "BÜNDNIS 90/.*", "bündnis90/diegrünen")
 
 bflwerwem <- left_join(kombitabelle, matchredner, by= c('speaker_id' = 'id'))
 
@@ -84,9 +86,9 @@ bflwerwem %>%
   select(!c(speaker_id,id, paragraph_id)) %>%
   select('redende fraktion' = fraktion, everything()) %>%
   group_by(`redende fraktion`) %>%
-  summarize('CDU/CSU' = sum(`CDU/CSU`), 'SPD' = sum(SPD), 'FDP' = sum(FDP), 'BÜNDNIS 90/DIE GRÜNEN' = sum(`BÜNDNIS 90/DIE GRÜNEN`), 'AfD' = sum(AfD), 'DIE LINKE' = sum(`DIE LINKE`)) %>%
+  summarize('cdu/csu' = sum(`cdu/csu`), 'spd' = sum(spd), 'fdp' = sum(fdp), 'bündnis90/diegrünen' = sum(`bündnis90/diegrünen`), 'afd' = sum(afd), 'dielinke' = sum(`dielinke`)) %>%
   ungroup() %>%
-  summarize(`redende fraktion`, `CDU/CSU`, 'anteilig_CDU' = (`CDU/CSU`/sum(`CDU/CSU`)), SPD, 'anteilig_SPD' = (SPD/sum(SPD)), FDP, 'anteilig_FDP' = (FDP/sum(FDP)), `BÜNDNIS 90/DIE GRÜNEN`, 'anteilig_GRÜNE' = (`BÜNDNIS 90/DIE GRÜNEN`/sum(`BÜNDNIS 90/DIE GRÜNEN`)), AfD, 'anteilig_AfD' = (AfD/sum(AfD)), `DIE LINKE`,'anteilig_LINKE' = (`DIE LINKE`/sum(`DIE LINKE`))) -> bflwerwem_anteile
+  summarize(`redende fraktion`, `cdu/csu`, 'anteilig_cdu' = (`cdu/csu`/sum(`cdu/csu`)), spd, 'anteilig_spd' = (spd/sum(spd)), fdp, 'anteilig_fdp' = (fdp/sum(fdp)), `bündnis90/diegrünen`, 'anteilig_grüne' = (`bündnis90/diegrünen`/sum(`bündnis90/diegrünen`)), afd, 'anteilig_afd' = (afd/sum(afd)), `dielinke`,'anteilig_linke' = (`dielinke`/sum(`dielinke`))) -> bflwerwem_anteile
 #diese Tabelle heißt bflwerwem_anteile
 
 bflwerwem_anteile %>%
@@ -96,21 +98,20 @@ bflwerwem_anteile %>%
 #ggplot(bflwerwem, mapping= aes(x= fraktion) ) + geom_bar()
 #ggplot(bfl_antl, mapping= aes(x= `redende fraktion`)) + geom_bar(stat="identity")
 
-bfl_antl <- select(bfl_antl, `redende fraktion`, 'CDU/CSU' = anteilig_CDU, 'SPD' = anteilig_SPD, 'FDP' = anteilig_FDP, 'GRÜNE' = anteilig_GRÜNE, 'AfD' = anteilig_AfD, 'LINKE' = anteilig_LINKE )
-bfl_antl <- pivot_longer(bfl_antl, `CDU/CSU`:LINKE, names_to = 'beifallgebend', values_to = 'anteile')
+bfl_antl <- select(bfl_antl, `redende fraktion`, 'cdu/csu' = anteilig_cdu, 'spd' = anteilig_spd, 'fdp' = anteilig_fdp, 'grüne' = anteilig_grüne, 'afd' = anteilig_afd, 'linke' = anteilig_linke )
+bfl_antl <- pivot_longer(bfl_antl, `cdu/csu`:linke, names_to = 'beifallgebend', values_to = 'anteile')
 
 #let's fix those colors!
 party_colors <-c(
-  SPD = "#DF0B25",
-  CSU = "#87bbe6",
-  "CDU/CSU" = "#000000",
-  AfD = "#1A9FDD",
-  "DIE LINKE" = "#BC3475",
-  "BÜNDNIS 90/DIE GRÜNEN" = "#4A932B",
-  FDP = "#FEEB34",
+  spd = "#DF0B25",
+  "cdu/csu" = "#000000",
+  afd = "#1A9FDD",
+  "dielinke" = "#BC3475",
+  "bündnis90/diegrünen" = "#4A932B",
+  fdp = "#FEEB34",
   "zur Geschäftsordnung" = "#999999",
   "fraktionslos" = "#61420e",
-  "Andere" = "#ed9e1f")
+  "andere" = "#ed9e1f")
 
 ggplot(bfl_antl, mapping= aes(x=beifallgebend, y=anteile, fill= `redende fraktion`)) + geom_bar(stat="identity") + scale_fill_manual(values=party_colors)
 
@@ -131,7 +132,10 @@ redenheiterkeit <- left_join(rdnfraktion, htkfraktion)
 
 redenheiterkeit %>%
   mutate('htk_pro_rede'=heiterkeiten/reden) %>%
-  arrange(desc(htk_pro_rede))
+  arrange(desc(htk_pro_rede)) -> htkprorede
+
+ggplot(htkprorede, mapping= aes(x=fraktion, y=htk_pro_rede) ) + geom_bar(stat="identity")
+
 
 ###########################
 
@@ -151,7 +155,10 @@ redenlachen <- left_join(rdnfraktion, lchfraktion)
 
 redenlachen %>%
   mutate('lch_pro_rede'=lachen/reden) %>%
-  arrange(desc(lch_pro_rede))
+  arrange(desc(lch_pro_rede)) -> lchprorede
+
+ggplot(lchprorede, mapping= aes(x=fraktion, y=lch_pro_rede) ) + geom_bar(stat="identity")
+
 ######################################
 
 kommentare %>%
@@ -170,7 +177,9 @@ redenzurufe <- left_join(rdnfraktion, zrffraktion)
 
 redenzurufe %>%
   mutate('zrf_pro_rede'=zurufe/reden) %>%
-  arrange(desc(zrf_pro_rede))
+  arrange(desc(zrf_pro_rede)) -> zrfprorede
+
+ggplot(zrfprorede, mapping= aes(x=fraktion, y=zrf_pro_rede) ) + geom_bar(stat="identity")
 
 ##############################
 
@@ -179,4 +188,11 @@ unterbrechungen <- left_join(unterbrechungen, redenlachen)
 unterbrechungen <- left_join(unterbrechungen, redenzurufe)
 
 unterbrechungen
+
+unterbrechungen %>%
+  mutate('utb_pro_rede' = (beifaelle+heiterkeiten+lachen+zurufe)/reden) %>%
+  arrange(desc(utb_pro_rede)) -> utbprorede
+
+ggplot(utbprorede, mapping= aes(x=fraktion, y=utb_pro_rede) ) + geom_bar(stat="identity") + scale_fill_manual(values=party_colors)
+
 
