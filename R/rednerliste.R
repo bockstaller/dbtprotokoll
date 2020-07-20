@@ -98,6 +98,7 @@ clean_speakers <- function(speakers){
 
   #ToDo: Tidy up entries of new entries of titel, namenszusatz and rolle
 
+<<<<<<< HEAD
   return(dplyr::ungroup(speakers[1:(length(speakers)-1)]))
 }
 
@@ -111,4 +112,7 @@ clean_roles <- function(roles){
   roles <- dplyr::mutate(roles, "rolle.rolle_lang" = stringr::str_squish(roles$rolle.rolle_lang), "rolle.rolle_kurz" = stringr::str_squish(roles$rolle.rolle_kurz))
   roles <- dplyr::distinct(roles)
   return(roles)
+=======
+  return(speakers[1:(length(speakers)-1)] %>% dplyr::ungroup())
+>>>>>>> cfd26404c7521fc5ddb7ff7184409c7d9fefdf63
 }
