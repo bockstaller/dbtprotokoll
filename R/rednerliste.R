@@ -67,6 +67,7 @@ split_roles <- function(speakers){
 
 #function to tidy up the list of speakers
 clean_speakers <- function(speakers){
+  speakers <- dplyr::distinct(speakers)
   #remove 10000-ids
   wrongids <- which(speakers$id == "10000")
   if(!identical(wrongids, integer(0))){
@@ -78,15 +79,22 @@ clean_speakers <- function(speakers){
   for(rownum in 1:nrow(speakers)){
     if(speakers$anzahl[rownum] > 1){
       for(i in 1:(speakers$anzahl[rownum] - 1)){
-        speakers[rownum,c(1:6,8)] <- dplyr::transmute(dplyr::full_join(speakers[rownum,], speakers[rownum + i,], by = "id"),
-                    id,
-                    titel = dplyr::coalesce(titel.x, titel.y),
-                    vorname = dplyr::coalesce(vorname.x, vorname.y),
-                    nachname = dplyr::coalesce(nachname.x, nachname.y),
-                    ortszusatz = dplyr::coalesce(ortszusatz.x, ortszusatz.y),
-                    fraktion = dplyr::coalesce(fraktion.x, fraktion.y),
-                    namenszusatz = dplyr::coalesce(namenszusatz.x, namenszusatz.y))
-        speakers[rownum,]$rolle <- (speakers[rownum,]$rolle | speakers[rownum + i,]$rolle)
+        joined_rows <- dplyr::transmute(dplyr::full_join(speakers[rownum,], speakers[rownum + i,], by = "id"),
+                                        id,
+                                        titel = dplyr::coalesce(titel.x, titel.y),
+                                        vorname = dplyr::coalesce(vorname.x, vorname.y),
+                                        namenszusatz = dplyr::coalesce(namenszusatz.x, namenszusatz.y),
+                                        nachname = dplyr::coalesce(nachname.x, nachname.y),
+                                        fraktion = dplyr::coalesce(fraktion.x, fraktion.y),
+                                        ortszusatz = dplyr::coalesce(ortszusatz.x, ortszusatz.y),
+                                        rolle = (rolle.x | rolle.y))
+        speakers[rownum, "titel"] <- joined_rows$titel
+        speakers[rownum, "vorname"] <- joined_rows$vorname
+        speakers[rownum, "namenszusatz"] <- joined_rows$namenszusatz
+        speakers[rownum, "nachname"] <- joined_rows$nachname
+        speakers[rownum, "fraktion"] <- joined_rows$fraktion
+        speakers[rownum, "ortszusatz"] <- joined_rows$ortszusatz
+        speakers[rownum, "rolle"] <- joined_rows$rolle
       }
       #remove next entries of group
       speakers <- speakers[-(rownum + (1:(speakers$anzahl[rownum]-1))),]

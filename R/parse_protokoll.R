@@ -116,17 +116,13 @@ parse_protocols <- function(path = "protokolle", start = NULL, end = NULL, insta
                       "comments"=tibble::tibble(),
                       "roles"=tibble::tibble())
 
-  print("merging")
   for(protocol in parsed_protocols){
     for(j in 1:4){
       protocolstb[[j]] <- dplyr::bind_rows(protocolstb[[j]], protocol[[j]])
     }
   }
 
-  print("tidying")
   #tidy speakers
-  #TODO!!!!!!!!!!!!!
-  #protocolstb[[1]] <- clean_speakers(dplyr::distinct(protocolstb[[1]]))
   protocolstb[[1]] <- clean_speakers(protocolstb[[1]])
   protocolstb[[4]] <- clean_roles(protocolstb[[4]])
 
