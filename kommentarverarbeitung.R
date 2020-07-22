@@ -4,15 +4,17 @@ library(dbtprotokoll)
 library(ggplot2)
 
 #all_prots <- parse_protocols()
-#save(all_prots, file = "data.RData")
+#save(all_prots, file = "dataset.RData")
+
+protocols <- parse_protocols(start="19002-data.xml", end = "19035-data.xml")
 
 bspprotokoll <- parse_protocols(start = "19001-data.xml", end = "19050-data.xml")
 kommentare <- bspprotokoll$comments
 rednerInnen <- bspprotokoll$speakers
 absaetze <- bspprotokoll$paragraphs
 
-rednerInnen$fraktion <- str_trim(rednerInnen$fraktion)
-rednerInnen$fraktion <- str_replace(rednerInnen$fraktion, "BÜNDNIS 90/.*", "bündnis90/diegrünen")
+#rednerInnen$fraktion <- str_trim(rednerInnen$fraktion)
+#rednerInnen$fraktion <- str_replace(rednerInnen$fraktion, "BÜNDNIS 90/.*", "bündnis90/diegrünen")
 rednerInnen$fraktion <- replace_na(rednerInnen$fraktion, "andere")
 
 
@@ -22,11 +24,11 @@ kommentare %>%
 
 absaetze %>%
   #group_by(speech) %>%
-  mutate_if(is.numeric, as.character) %>%
+  #mutate_if(is.numeric, as.character) %>%
   select(speech, 'speaker_id') %>%
   distinct(speech, .keep_all = TRUE) -> matchrede
 
-matchrede$speaker_id <- matchrede$speaker_id
+#matchrede$speaker_id <- matchrede$speaker_id
 
 kombitabelle <- left_join(beifaelle, matchrede, by=c('paragraph_id'= 'speech'))
 
@@ -109,9 +111,9 @@ party_colors <-c(
   "dielinke" = "#BC3475",
   "bündnis90/diegrünen" = "#4A932B",
   fdp = "#FEEB34",
-  "zur Geschäftsordnung" = "#999999",
   "fraktionslos" = "#61420e",
-  "andere" = "#ed9e1f")
+  "andere" = "#ed9e1f",
+  "zur Geschäftsordnung" = "#999999")
 
 ggplot(bfl_antl, mapping= aes(x=beifallgebend, y=anteile, fill= `redende fraktion`)) + geom_bar(stat="identity") + scale_fill_manual(values=party_colors)
 
@@ -134,7 +136,7 @@ redenheiterkeit %>%
   mutate('htk_pro_rede'=heiterkeiten/reden) %>%
   arrange(desc(htk_pro_rede)) -> htkprorede
 
-ggplot(htkprorede, mapping= aes(x=fraktion, y=htk_pro_rede) ) + geom_bar(stat="identity")
+ggplot(htkprorede, mapping= aes(x=fraktion, y=htk_pro_rede) ) + geom_bar(stat="identity", aes(fill = fraktion)) + scale_fill_manual(values = party_colors)
 
 
 ###########################
