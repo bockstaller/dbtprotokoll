@@ -24,14 +24,45 @@ test_roles <- tibble::tibble("id" = c("11111111", "22222222", "33333333"),
                              "rolle.rolle_lang" = "Rolle",
                              "rolle.rolle_kurz" = "R")
 
-context("minimal.xml")
+context("parse_protocols")
 test_that("parse minimal.xml", {
   setwd("../")
-  expect_error(parse_protocol(NULL))
   minimal <- parse_protocol("tests/minimal.xml")
   expect_type(minimal, "list")
   expect_identical(minimal[[1]], test_speakers)
   expect_identical(minimal[[2]], test_paragraphs)
   expect_identical(minimal[[3]], test_comments)
   expect_identical(minimal[[4]], test_roles)
+})
+
+test_that("parse single protocol", {
+  expect_error(parse_protocol(NULL))
+  example_prot <- parse_protocol("protokolle/19001-data.xml")
+  expect_s3_class(example_prot[[1]], "tbl_df")
+
+  expect_named(example_prot[[1]], c("id", "titel", "vorname", "nachname", "ortszusatz", "fraktion", "rolle"))
+  expect_named(example_prot[[2]], c("id", "speech", "speech_type", "speaker_id", "moderator", "class", "content", "j_1_gate"))
+  expect_named(example_prot[[3]], c("id", "paragraph_id", "content"))
+  expect_named(example_prot[[4]], c("id", "rolle.rolle_lang", "rolle.rolle_kurz"))
+
+  for(i in 1:6){
+    expect_type(example_prot[[1]][[i]], "character")
+  }
+  expect_type(example_prot[[1]]$rolle, "logical")
+  expect_type(example_prot[[2]]$id, "integer")
+  expect_type(example_prot[[2]]$j_1_gate, "logical")
+  for(i in 2:7){
+    expect_type(example_prot[[2]][[i]], "character")
+  }
+  expect_type(example_prot[[3]]$id, "double")
+  expect_type(example_prot[[3]]$paragraph_id, "character")
+  expect_type(example_prot[[3]]$content, "character")
+  for(i in 1:3){
+    expect_type(example_prot[[4]][[i]], "character")
+  }
+})
+
+test_that("parse multiple protocols", {
+  expect_identical(parse_protocols(path = "tests"), parse_protocol("tests/minimal.xml"))
+  expect_error(parse_protocols(start = "minimal.xml"))
 })
