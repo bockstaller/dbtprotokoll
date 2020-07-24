@@ -1,0 +1,125 @@
+---
+title: "Word Lengths"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Word Lengths}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(tidyverse)
+library(xml2)
+library(dbtprotokoll)
+library(ggplot2)
+```
+
+We start by loading a protocol dataset consisting out of previously parsed xml-protocols from disk into our global environment.
+
+```{r}
+#load("dataset.RData")
+setwd("../")
+protocols <- parse_protocols(start = "19001-data.xml", end = "19004-data.xml")
+```
+
+We also remove all entries with a moderator-status because these are not represetative for the average word-usage.
+
+```{r}
+speaches <- filter(protocols[[2]], is.na(moderator))
+```
+
+## Analysis of different word lengths between academics and non-academics
+
+We divde the speakers depending into academics and non-academics depending on the occurance of an entry in "titel".
+
+```{r}
+academics <- filter(protocols[[1]], !is.na(titel))
+nonacademics <- filter(protocols[[1]], is.na(titel))
+```
+
+Now we want to get the mean word length and distribution for word lengths for each group.
+Because we will need this once more for our second analysis we have small functions for that: 
+
+The function word_length counts the lengths of words by counting all letters in them.
+```{r}
+word_length <- function(str){
+  words <-  str_split(str, "[:space:]")
+  len <- sapply(words, str_count, "[:alpha:]{1}")
+  return(len)
+}
+```
+
+Because the majority of representatives does not have an academic title we want this distribution in percentages for better comparison.
+```{r}
+percentage <- function(tbl){
+  group_by(tbl, lgt) %>%
+    mutate("count" = n()) %>%
+    distinct() %>%
+    arrange(lgt) %>%
+    ungroup() %>%
+    mutate(pct = count / sum(count))
+}
+```
+
+ 
+By dividing the speeches into academic and non-academic speeches we can get the word length distribution and the mean word lenght.
+```{r}
+academic_speaches <- left_join(academics, mutate(speaches,speaker_id=speaker_id),
+                               by = c("id" = "speaker_id"))
+academic_speaches <- filter(academic_speaches, speech_type == "speech")
+academic_word_lengths <- tibble("lgt" = unname(unlist(sapply(academic_speaches$content, word_length)))) %>%
+  filter(lgt > 0)
+academic_mean_word_length <- summarise(academic_word_lengths, "mean" = mean(lgt))
+
+nonacademic_speaches <- left_join(nonacademics, mutate(speaches,speaker_id=speaker_id),
+                                  by = c("id" = "speaker_id"))
+nonacademic_speaches <- filter(nonacademic_speaches, speech_type == "speech")
+nonacademic_word_lengths <- tibble("lgt" = unname(unlist(sapply(nonacademic_speaches$content, word_length)))) %>%
+  filter(lgt > 0)
+nonacademic_mean_word_length <- summarise(nonacademic_word_lengths, "mean" = mean(lgt))
+```
+
+Finally we can put this data into graphs.
+```{r}
+titel_mean_word_length <- tibble("titel" = c("academics", "nonacademics"), "count" = c(academic_mean_word_length$mean, nonacademic_mean_word_length$mean))
+
+titel_word_lengths <- bind_rows(mutate(percentage(academic_word_lengths), "titel" = "academics"),
+                                mutate(percentage(nonacademic_word_lengths), "titel" = "nonacademics"))
+
+ggplot(titel_mean_word_length) + geom_col(aes(x = titel, y = count))
+ggplot(titel_word_lengths) + geom_col(aes(x = lgt, y = pct, fill = titel), position = "dodge")
+```
+
+## Comparison of different word lengths between parties
+
+Simillar to before we have a function to get the distribution of word lengths for speakers of different parties.
+```{r}
+party_word_length <- function(speaches, speakers, party){
+  party_members <- filter(speakers, fraktion == party)
+  party_speeches <- left_join(party_members, speaches, by = c("id" = "speaker_id"))
+  party_speeches <- filter(party_speeches, speech_type == "speech")
+  word_lengths <- tibble("lgt" = unname(unlist(sapply(party_speeches$content, word_length)))) %>%
+    filter(lgt > 0)
+  return(word_lengths)
+}
+```
+We do the analysis for all 6 parties and compare them.
+```{r}
+parties <- c('cdu/csu', 'spd', 'fdp', 'bündnis90/diegrünen', 'afd', 'dielinke')
+party_word_lengths <- lapply(parties, party_word_length, speakers = protocols[[1]], speaches = speaches)
+party_mean_word_length <- lapply(party_word_lengths, summarise, "mean" = mean(lgt))
+party_mean_word_length <- tibble("party" = parties,
+                                 "count" = sapply(party_mean_word_length, function(tbl){return(tbl$mean)}))
+party_word_lengths_pct <- bind_rows(lapply(1:6, function(i){
+  return(mutate(percentage(party_word_lengths[[i]]), "party" = parties[i]))}))
+
+ggplot(party_mean_word_length) + geom_col(aes(x = party, y = count))
+ggplot(party_word_lengths_pct) + geom_col(aes(x = lgt, y = pct, fill = party), position = "dodge")
+```
