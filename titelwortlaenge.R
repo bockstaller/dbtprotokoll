@@ -59,7 +59,7 @@ ggplot(titel_word_lengths) + geom_col(aes(x = lgt, y = pct, fill = titel), posit
 #for different parties
 party_word_length <- function(speaches, speakers, party){
   party_members <- filter(speakers, fraktion == party)
-  party_speaches <- left_join(party_members, mutate(speaches,"speaker_id" = speaker_id),
+  party_speaches <- left_join(party_members, speaches,
                                  by = c("id" = "speaker_id"))
   party_speaches <- filter(party_speaches, speech_type == "speech")
   word_lengths <- tibble("lgt" = unname(unlist(sapply(party_speaches$content, word_length)))) %>%
