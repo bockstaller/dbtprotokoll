@@ -34,7 +34,7 @@ paragraph_list <- function(protocol){
 
   # we track the currently speaking speaker and a moderator who might interject.
   current_speaker = 0L
-  current_moderator = NA
+  current_moderator = NA_character_
 
   # we try to prove that the first paragraph a persons says is highlighted as J_!
   j_1_gate = FALSE
@@ -59,7 +59,7 @@ paragraph_list <- function(protocol){
         # we reset the moderator, save the speaker id and change some modes
         # we do not append to the paragraph list
         if ("redner" == class){
-          current_moderator <- NA
+          current_moderator <- NA_character_
           current_speaker <- xml2::xml_attr(xml2::xml_child(speech_list[i], "redner"), "id")
           current_speech_type <- 2
           j_1_gate <- FALSE
