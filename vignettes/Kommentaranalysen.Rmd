@@ -1,0 +1,269 @@
+---
+title: "Kommentaranalysen"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Kommentaranalysen}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  fig.width=8, #fig.height=6,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(dbtprotokoll)
+library(tidyverse)
+library(xml2)
+library(ggplot2)
+```
+
+We start by loading a protocol dataset consisting out of previously parsed xml-protocols from disk into our global environment.
+
+```{r}
+load("./dataset_2.RData")
+```
+
+# Preparing Data
+
+First of all, we prepare our data for further analysis. We use different variables for each tibble from our protocols list, except for the "roles" tibble which will not be relevant to our analysis. We will also replace all NA values in `protocols$speakers$fraktion` with "andere" ("other") to make further analysis easier.
+
+_Please be aware that all variable names in this analysis are in German as the content they are working with is in German as well._
+
+```{r}
+kommentare <- all_prots$comments
+rednerInnen <- all_prots$speakers
+absaetze <- all_prots$paragraphs
+
+rednerInnen$fraktion <- replace_na(rednerInnen$fraktion, "andere")
+
+```
+
+Next, we will create the "matchredner" tibble, which is a smaller version of the speakers tibble with less for this application unneccessary information, and we will create the "matchrede" tibble, which is just a list of all different speech IDs with the speaker ID of the person who held the speech.
+These new tibbles will play very important roles when it comes to combining our data later.
+
+```{r}
+rednerInnen %>%
+  select(id, vorname, nachname, fraktion) -> matchredner
+
+absaetze %>%
+  select(speech, 'speaker_id') %>%
+  distinct(speech, .keep_all = TRUE) -> matchrede
+
+```
+
+For our last preparation step, we will count how many speeches a given fraction actually gets. This information is saved in the "rdnfraktion" tibble.
+We will use this tibble later to find out how much ... per speech a fraction gets, where ... is the kind of interruption each segment looks into.
+
+```{r}
+rede_redner <- left_join(matchrede, matchredner, by = c('speaker_id'='id'))
+
+rede_redner %>%
+  group_by(fraktion) %>%
+  summarize('reden' = n()) %>%
+  arrange(desc(reden)) -> rdnfraktion
+
+```
+
+Now that we have our basics figured out, let's start with some simple analyses!
+
+# Interruptions per party
+
+In the plenary protocols, there are different kinds of comments during speeches that are being recorded: amusement ("Heiterkeit"), applause ("Beifall"), laughter ("Lachen") and shouts ("Zwischenrufe"). In the protocols, these interjections are noted as follows: "[Interjection] by [fraction/person]". We will now see how many (on average) of these kinds of interruptions each party has to endure per speech given.
+
+Let's start with amusement.
+
+## Amusement ("Heiterkeit")
+
+In our first step, we need to find all comments having to do with amusement.
+
+```{r}
+kommentare %>%
+  filter(str_detect(content, "Heiterkeit ")) -> heiterkeiten
+```
+
+Now we will match these comments up with the speakers of the speech they were given in and we will also add the party of said speaker. We do this using the "matchrede" and "matchredner" tibbles from before.
+
+```{r}
+kombitabelle <- left_join(heiterkeiten, matchrede, by=c('paragraph_id'= 'speech'))
+
+heiteranzahl <- left_join(kombitabelle, matchredner, by = c('speaker_id'='id'))
+```
+
+Now we can find out how much amusement-interjections each fraction gets by grouping by fraction and counting.
+Sadly, this information is rather useless since the different partys get vastly different amounts of speeches and speaking time. Hence, we use our tibble from before, where we counted the amount of speeches each fraction got, to get some valuable information.
+
+```{r}
+heiteranzahl %>%
+  group_by(fraktion) %>%
+  summarize('heiterkeiten' =n()) %>%
+  arrange(desc(heiterkeiten)) -> htkfraktion
+
+redenheiterkeit <- left_join(rdnfraktion, htkfraktion)
+
+redenheiterkeit %>%
+  mutate('htk_pro_rede'=heiterkeiten/reden) %>%
+  arrange(desc(htk_pro_rede)) -> htkprorede
+
+```
+
+Now we have information about how much amusement per speech the fractions get. If we plot this, we can see the comparison across the different partys:
+
+```{r}
+ggplot(htkprorede, mapping= aes(x=fraktion, y=htk_pro_rede) ) + geom_bar(stat="identity", aes(fill = fraktion)) + scale_fill_manual(values = party_colors)
+```
+
+Now here's the thing: all remaining types of interjections can be analysed the exact same way! Therefore, not much comment is needed on these.
+
+## Laughter ("Lachen")
+
+```{r}
+kommentare %>%
+  filter(str_detect(content, "Lachen ")) -> lachen
+
+kombitabelle <- left_join(lachen, matchrede, by=c('paragraph_id'= 'speech'))
+
+lachanzahl <- left_join(kombitabelle, matchredner, by = c('speaker_id'='id'))
+
+lachanzahl %>%
+  group_by(fraktion) %>%
+  summarize('lachen' =n()) %>%
+  arrange(desc(lachen)) -> lchfraktion
+
+redenlachen <- left_join(rdnfraktion, lchfraktion)
+
+redenlachen %>%
+  mutate('lch_pro_rede'=lachen/reden) %>%
+  arrange(desc(lch_pro_rede)) -> lchprorede
+
+ggplot(lchprorede, mapping= aes(x=fraktion, y=lch_pro_rede) ) + geom_bar(stat="identity", aes(fill = fraktion)) + scale_fill_manual(values = party_colors)
+
+```
+
+The spike in one particular party is very interesting within this category!
+
+## Shouts ("Zurufe")
+
+```{r}
+kommentare %>%
+  filter(str_detect(content, "Zuruf")) -> zurufe
+
+kombitabelle <- left_join(zurufe, matchrede, by=c('paragraph_id'= 'speech'))
+
+zurufanzahl <- left_join(kombitabelle, matchredner, by = c('speaker_id'='id'))
+
+zurufanzahl %>%
+  group_by(fraktion) %>%
+  summarize('zurufe' =n()) %>%
+  arrange(desc(zurufe)) -> zrffraktion
+
+redenzurufe <- left_join(rdnfraktion, zrffraktion)
+
+redenzurufe %>%
+  mutate('zrf_pro_rede'=zurufe/reden) %>%
+  arrange(desc(zrf_pro_rede)) -> zrfprorede
+
+ggplot(zrfprorede, mapping= aes(x=fraktion, y=zrf_pro_rede) ) + geom_bar(stat="identity", aes(fill = fraktion)) + scale_fill_manual(values = party_colors)
+
+```
+
+## Applause ("Beifälle")
+
+```{r}
+kommentare %>%
+  filter(str_detect(content, "Beifall ")) -> beifaelle
+
+kombitabelle <- left_join(beifaelle, matchrede, by=c('paragraph_id'= 'speech'))
+
+beifallanzahl <- left_join(kombitabelle, matchredner, by = c('speaker_id'='id'))
+
+beifallanzahl %>%
+  group_by(fraktion) %>%
+  summarize('beifaelle' =n()) %>%
+  arrange(desc(beifaelle)) -> bflfraktion
+
+redenbeifall <- left_join(rdnfraktion, bflfraktion)
+
+redenbeifall %>%
+  mutate('bfl_pro_rede'=beifaelle/reden) %>%
+  arrange(desc(bfl_pro_rede)) -> bflprorede
+
+ggplot(bflprorede, mapping= aes(x=fraktion, y=bfl_pro_rede) ) + geom_bar(stat="identity", aes(fill = fraktion)) + scale_fill_manual(values = party_colors)
+```
+
+Now, before we do some more advanced and interesting analysis on the applause, we will also take a look at how many interjections of any kind each party gets per speech.
+
+## Interruptions ("Unterbrechungen")
+
+```{r}
+unterbrechungen <- left_join(redenbeifall,redenheiterkeit)
+unterbrechungen <- left_join(unterbrechungen, redenlachen)
+unterbrechungen <- left_join(unterbrechungen, redenzurufe)
+
+unterbrechungen %>%
+  mutate('utb_pro_rede' = (beifaelle+heiterkeiten+lachen+zurufe)/reden) %>%
+  arrange(desc(utb_pro_rede)) -> utbprorede
+
+ggplot(utbprorede, mapping= aes(x=fraktion, y=utb_pro_rede) ) + geom_bar(stat="identity", aes(fill = fraktion)) + scale_fill_manual(values = party_colors)
+
+```
+
+
+# Advanced Analysis: distribution of applause
+
+Now let's get to the fun stuff! We have looked at how much applause each fraction gets per speech, now let's look at another aspect: which other fractions does a fraction give their applause? Specifically, what percentage of the applause a fraction gives goes to which other fractions?
+
+In order to find the answer to this question, we first have to take a look at when a party does applaud:
+```{r}
+beifaelle %>%
+  mutate('union' = as.integer(str_detect(content, 'CDU')), 'spd' = as.integer(str_detect(content, 'SPD')), 'fdp' = as.integer((str_detect(content, 'FDP'))), 'grüne' = as.integer(str_detect(content, 'DIE GR')), 'afd' = as.integer(str_detect(content, 'AfD')), 'linke' = as.integer(str_detect(content, 'LINKE'))) %>%
+   group_by(paragraph_id) %>%
+   summarize(id, 'cdu/csu' = sum(union), 'spd' = sum(spd), 'fdp' = sum(fdp), 'bündnis90/diegrünen' = sum(grüne), 'afd' = sum(afd), 'dielinke' = sum(linke)) %>%
+   distinct(paragraph_id, .keep_all = TRUE) -> bflwerwann
+
+bflwerwann
+```
+Now we want to know which fraction those speeches were held by.
+
+```{r}
+kombitabelle <- left_join(bflwerwann, matchrede, by = c('paragraph_id' = 'speech'))
+
+rednerInnen %>%
+  select(id, fraktion) -> matchredner
+
+bflwerwem <- left_join(kombitabelle, matchredner, by= c('speaker_id' = 'id'))
+
+bflwerwem
+```
+
+An now we want to see those percentages!
+
+```{r}
+bflwerwem %>%
+  ungroup() %>%
+  select(!c(speaker_id,id, paragraph_id)) %>%
+  select('redende fraktion' = fraktion, everything()) %>%
+  group_by(`redende fraktion`) %>%
+  summarize('cdu/csu' = sum(`cdu/csu`), 'spd' = sum(spd), 'fdp' = sum(fdp), 'bündnis90/diegrünen' = sum(`bündnis90/diegrünen`), 'afd' = sum(afd), 'dielinke' = sum(`dielinke`)) %>%
+  ungroup() %>%
+  summarize(`redende fraktion`, `cdu/csu`, 'anteilig_cdu' = (`cdu/csu`/sum(`cdu/csu`)), spd, 'anteilig_spd' = (spd/sum(spd)), fdp, 'anteilig_fdp' = (fdp/sum(fdp)), `bündnis90/diegrünen`, 'anteilig_grüne' = (`bündnis90/diegrünen`/sum(`bündnis90/diegrünen`)), afd, 'anteilig_afd' = (afd/sum(afd)), `dielinke`,'anteilig_linke' = (`dielinke`/sum(`dielinke`))) -> bflwerwem_anteile
+
+bflwerwem_anteile %>%
+  select(`redende fraktion`,starts_with('anteilig')) -> bfl_antl
+
+bfl_antl
+
+```
+
+In order to plot this data nicely, we still need to transform it a bit.
+
+```{r}
+bfl_antl <- select(bfl_antl, `redende fraktion`, 'cdu/csu' = anteilig_cdu, 'spd' = anteilig_spd, 'fdp' = anteilig_fdp, 'grüne' = anteilig_grüne, 'afd' = anteilig_afd, 'linke' = anteilig_linke )
+bfl_antl <- pivot_longer(bfl_antl, `cdu/csu`:linke, names_to = 'beifallgebend', values_to = 'anteile')
+
+ggplot(bfl_antl, mapping= aes(x=beifallgebend, y=anteile, fill= `redende fraktion`)) + geom_bar(stat="identity") + scale_fill_manual(values=party_colors)
+```
