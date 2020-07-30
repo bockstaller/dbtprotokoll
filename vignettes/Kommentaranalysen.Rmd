@@ -25,7 +25,7 @@ library(ggplot2)
 We start by loading a protocol dataset consisting out of previously parsed xml-protocols from disk into our global environment.
 
 ```{r}
-load("./dataset_2.RData")
+load("./dataset.RData")
 ```
 
 # Preparing Data
