@@ -65,7 +65,7 @@ parse_protocols <- function(path = "protokolle", start = NULL, end = NULL, insta
   stopifnot("Please enter path as string" = is.character(path))
   protocols <- dir(path)
   if(identical(protocols, character(0))){
-    stop(path, " was not found of is empty.")
+    stop(path, " was not found or is empty.")
   }
   protocols <- protocols[endsWith(protocols, ".xml")]
 
