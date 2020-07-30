@@ -35,9 +35,9 @@ First of all, we prepare our data for further analysis. We use different variabl
 _Please be aware that all variable names in this analysis are in German as the content they are working with is in German as well._
 
 ```{r}
-kommentare <- all_prots$comments
-rednerInnen <- all_prots$speakers
-absaetze <- all_prots$paragraphs
+kommentare <- protocols$comments
+rednerInnen <- protocols$speakers
+absaetze <- protocols$paragraphs
 
 rednerInnen$fraktion <- replace_na(rednerInnen$fraktion, "andere")
 
