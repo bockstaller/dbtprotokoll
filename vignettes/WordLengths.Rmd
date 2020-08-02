@@ -9,24 +9,27 @@ vignette: >
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
+  fig.width=8, #fig.height=6,
   collapse = TRUE,
   comment = "#>"
 )
 ```
 
+## Preparation
+
 ```{r setup}
+library(dbtprotokoll)
 library(tidyverse)
 library(xml2)
-library(dbtprotokoll)
 library(ggplot2)
 ```
 
 We start by loading a protocol dataset consisting out of previously parsed xml-protocols from disk into our global environment.
 
 ```{r}
-#load("dataset.RData")
-setwd("../")
-protocols <- parse_protocols(start = "19001-data.xml", end = "19004-data.xml")
+load("dataset.RData")
+#setwd("../")
+#protocols <- parse_protocols(start = "19001-data.xml", end = "19004-data.xml")
 ```
 
 We also remove all entries with a moderator-status because these are not represetative for the average word-usage.
@@ -67,9 +70,9 @@ percentage <- function(tbl){
     mutate(pct = count / sum(count))
 }
 ```
-
  
 By dividing the speeches into academic and non-academic speeches we can get the word length distribution and the mean word lenght.
+
 ```{r}
 academic_speaches <- left_join(academics, mutate(speaches,speaker_id=speaker_id),
                                by = c("id" = "speaker_id"))
@@ -94,7 +97,7 @@ titel_word_lengths <- bind_rows(mutate(percentage(academic_word_lengths), "titel
                                 mutate(percentage(nonacademic_word_lengths), "titel" = "nonacademics"))
 
 ggplot(titel_mean_word_length) + geom_col(aes(x = titel, y = count))
-ggplot(titel_word_lengths) + geom_col(aes(x = lgt, y = pct, fill = titel), position = "dodge")
+ggplot(titel_word_lengths) + geom_col(aes(x = lgt, y = pct, fill = titel), position = "dodge")+ xlim(0,20)
 ```
 
 ## Comparison of different word lengths between parties
@@ -112,7 +115,7 @@ party_word_length <- function(speaches, speakers, party){
 ```
 We do the analysis for all 6 parties and compare them.
 ```{r}
-parties <- c('cdu/csu', 'spd', 'fdp', 'bündnis90/diegrünen', 'afd', 'dielinke')
+parties <- c("cdu/csu", "spd", "fdp", "bündnis90/diegrünen", "afd", "dielinke")
 party_word_lengths <- lapply(parties, party_word_length, speakers = protocols[[1]], speaches = speaches)
 party_mean_word_length <- lapply(party_word_lengths, summarise, "mean" = mean(lgt))
 party_mean_word_length <- tibble("party" = parties,
@@ -120,6 +123,6 @@ party_mean_word_length <- tibble("party" = parties,
 party_word_lengths_pct <- bind_rows(lapply(1:6, function(i){
   return(mutate(percentage(party_word_lengths[[i]]), "party" = parties[i]))}))
 
-ggplot(party_mean_word_length) + geom_col(aes(x = party, y = count))
-ggplot(party_word_lengths_pct) + geom_col(aes(x = lgt, y = pct, fill = party), position = "dodge")
+ggplot(party_mean_word_length) + geom_col(aes(x = party, y = count)) + scale_fill_manual(values=party_colors)
+ggplot(party_word_lengths_pct) + geom_col(aes(x = lgt, y = pct, fill = party), position = "dodge") + xlim(0,20)  + scale_fill_manual(values=party_colors)
 ```
