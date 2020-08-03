@@ -5,6 +5,7 @@ vignette: >
   %\VignetteIndexEntry{Stimmung}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+
 ---
 
 ```{r, include = FALSE}
@@ -22,7 +23,15 @@ library(ggplot2)
 library(tidyr)
 library(tibble)
 library(dplyr)
+library(jsonlite)
+library(curl)
+library(magrittr)
+library(corrplot)
+library(ggcorrplot)
+library(cowplot)
 ```
+
+Hypothesis: **The political fractions use a different tone and words during their speeches. This should be observable in our data.**
 
 We start by loading a protocol dataset consisting out of previously parsed xml-protocols from disk into our global environment.
 
@@ -36,6 +45,8 @@ We join our paragraphs- and speaker-tibbles by their speaker-id before tidying u
 Tidying up this dataset means pivoting the speech content in a way, that every row contains only one word of a speech.
 This process blows up the row count from ~250.000 rows up to 14.100.000 rows, which makes this sequence of steps necessary.
 
+We remove common stop words, as provided by the stopwords package, from the speeches.
+
 
 ```{r}
 speech <- protocols$paragraphs
@@ -44,19 +55,19 @@ speech <- protocols$paragraphs
 speech_and_speaker <- merge(x = protocols$paragraphs, y = protocols$speakers, by.x = "speaker_id", by.y = "id", all.x = TRUE) 
 
 tidy_speeches <- speech_and_speaker %>% 
+  drop_na(fraktion) %>%
   unnest_tokens(word, content)
-```
 
-# Word occurences
-
-We remove common stop words, as provided by the stopwords package, from the speeches.
-We count the occurences and graph them in a simple stacked graph.
-
-```{r}
 stop_german <- data.frame(word = stopwords::stopwords("german", source = "stopwords-iso"), stringsAsFactors = FALSE)
 
 tidy_speeches_no_stop <- tidy_speeches %>% anti_join(stop_german, by = c("word"))
+```
 
+
+We start with some simple exploratory steps to get a feeling for our dataset. So we count word occurences and graph them in a simple stacked graph.
+
+
+```{r}
 word_occurences <- tidy_speeches_no_stop %>%
   count(word, sort = TRUE)
 
@@ -69,17 +80,192 @@ word_occurences %>%
   coord_flip()
 ```
 
+# Remove parliamentary stop words
+
+There is a lot of noise in this graph. Words that are used in a greeting or are just part of the procedure.
+Let's remove the worst offenders from the dataset.
+
+```{r fig.align='center', message=FALSE, warning=FALSE, out.width='80%'}
+
+parliamentary_stop_words <-as_tibble(c("herr", "herren", "damen", "frau", "fraktion", "antrag", "kollegen", "kolleginnen", "liebe", "kollege", "kollegin", "frage", "präsident", "geehrte", "geehrten", "herzlich", "herzliches", "herzlichen", "dr"))
+
+tidy_speeches_no_parliamentary_stop <- tidy_speeches_no_stop %>% anti_join(parliamentary_stop_words, by = c("word" = "value"))
+
+word_occurences <- tidy_speeches_no_parliamentary_stop %>%
+  count(word, sort = TRUE)
+
+word_occurences %>%
+  top_n(40) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n)) +
+  geom_col() +
+  xlab(NULL) +
+  coord_flip()
+```
+Much better. A computer linguist might be able to only drop complete phrases from the dataset, but we are currently limited to this blunt approach.
+
+
 # Word occurences per party
 
-Now we want to count how often words are used per party.
+Let's compare the different fractions. Can we identify significant differences in the word usage?
 
 ```{r}
 
-word_occurences_per_party <- tidy_speeches_no_stop %>%
+word_occurences_per_party <- tidy_speeches_no_parliamentary_stop  %>%
   select(fraktion, word) %>%
   add_column(count = 1L) %>%
-  drop_na(fraktion) %>%
-  count(word, fraktion, sort=TRUE)
+  group_by(fraktion) %>%
+  count(word, sort=TRUE)
+
+top_words_per_party <- word_occurences_per_party %>%
+  top_n(20) %>%
+  group_split()
+
+top_words_per_party
+
 
 ```
+We can see differencees but this approach is limited by the wildly varying n-values. This makes it difficult to make conclusions. We need a more relative approach.
+
+
+# Compute relative occurences 
+
+We compute relative word occurences per fraction by dividing their word occurence count by the sum of words used in their speeches. Using this approach reduces the influence of the speaking time alloted to each fraction on their total word count. It is more suited to highlight the topics a fraction is invested in and therefore use their speaking time for.
+
+
+```{r fig.align='center', message=FALSE, warning=FALSE, out.width='80%'}
+words_per_party <- tidy_speeches_no_parliamentary_stop  %>%
+  select(fraktion, word) %>%
+  group_by(fraktion) %>%
+  count()
+
+# Get all fraction names
+relative_word_occurences_per_party <- word_occurences_per_party %>% 
+  left_join(words_per_party, by=c("fraktion" = "fraktion")) %>%
+  mutate(relative_occurence = n.x/n.y) %>%
+  left_join(word_occurences, by=c("word"="word")) %>%
+  rename(absolute_number = n, total_words_per_party = n.y, occurences_per_party = n.x)
+
+
+relative_word_occurences_per_party %>% filter(word=="deutschland")
+
+```
+This snippet shows the relative_occurence of the word word "deutschland" for each fraction. 
+It shows as well that "fraktionslos" has very few total spoken words. We will drop this fraction for future analysis to prevent it from skewing results
+
+
+```{r}
+
+coalesce_all_columns <- function(df) {
+  return(coalesce(!!! as.list(df)))
+}
+
+relative_word_occurences <- relative_word_occurences_per_party %>%
+  select(-c(occurences_per_party, total_words_per_party)) %>%
+  pivot_wider(names_from=fraktion, values_from=relative_occurence) %>%
+  select(-fraktionslos) %>%
+  ungroup() %>%
+  group_by(word) %>% 
+  summarise_all(coalesce_all_columns) %>%
+  arrange(desc(absolute_number)) %>% 
+  na.omit()
+
+relative_word_occurences %>% head(10)  
+```
+
+This step reshaped the data, so that we now have a word per row and a column per fraction listing the associated matching relative occurence. We have dropped all words from this dataset which weren't used by all fractions. 
+
+
+# Test if fractions use some words more than others
+
+We use the chi-square-test and it's standardized residuals to test for correlation between words and fractions. A positive residual shows that the observed value is bigger than if the data were random. Therefore we can sort the residuals-table by residual per fraction to show which words are used especially often by this fraction. We can't interpret the amount of the residuals as usual due to the standardization of the word occurences.
+
+```{r fig.align='center', message=FALSE, warning=FALSE, out.width='80%'}
+
+chi_data <- relative_word_occurences %>% select(-absolute_number) 
+
+chi_data <- chi_data %>% as.data.frame()
+rownames(chi_data) = chi_data$word
+
+chisq <- chisq.test(chi_data[-1])
+
+res = as.tibble(chisq$residuals, rownames = "word") 
+names = res$word
+
+entries = 20
+
+top_afd <- res %>%
+  arrange(desc(afd)) %>%
+  head(entries) %>%
+  column_to_rownames(var = "word") %>%
+  as.matrix()
+
+plot_matrix <- function(x, name){
+  return(ggcorrplot(x, title = name) + scale_fill_gradient2(limit = c(min(x)*1.5, max(x)*1.5), low = "blue", high = "red", mid = "white", midpoint = mean(x)))
+}
+
+afd_plot <- plot_matrix(top_afd, "AfD")
+afd_plot
+
+```
+
+This plot shows that the AfD is using words like "Bürger", "Altparteien", "EU", "Merkel", "AfD", usw. more often than every other fraction.
+Similiar graphs for other parties are created below. It is the responsibility of the reader to interpret these plots.
+
+
+```{r fig.align='center', message=FALSE, warning=FALSE, out.width='80%'}
+
+top_cdu <- res %>%
+  arrange(desc(`cdu/csu`)) %>%
+  head(entries) %>%
+  column_to_rownames(var = "word") %>%
+  as.matrix()
+
+cdu_plot <- plot_matrix(top_cdu, "CDU")
+
+top_spd <- res %>%
+  arrange(desc(`spd`)) %>%
+  head(entries) %>%
+  column_to_rownames(var = "word") %>%
+  as.matrix()
+
+spd_plot <- plot_matrix(top_spd, "SPD")
+
+
+top_fdp <- res %>%
+  arrange(desc(`fdp`)) %>%
+  head(entries) %>%
+  column_to_rownames(var = "word") %>%
+  as.matrix()
+
+fdp_plot <- plot_matrix(top_fdp, "FDP")
+
+top_gruene <- res %>%
+  arrange(desc(`bündnis90/diegrünen`)) %>%
+  head(entries) %>%
+  column_to_rownames(var = "word") %>%
+  as.matrix()
+
+gruene_plot <- plot_matrix(top_gruene, "Bündnis 90 / Die Grünen")
+
+top_dielinke <- res %>%
+  arrange(desc(`dielinke`)) %>%
+  head(entries) %>%
+  column_to_rownames(var = "word") %>%
+  as.matrix()
+
+dielinke_plot <- plot_matrix(top_dielinke, "Die Linke")
+
+cdu_plot 
+spd_plot 
+fdp_plot 
+gruene_plot
+dielinke_plot
+
+
+```
+
+
+
+
 
