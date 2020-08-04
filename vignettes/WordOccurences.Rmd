@@ -8,10 +8,20 @@ vignette: >
 
 ---
 
+
+
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.width = 8,
+  fig.heigth = 6,
+  out.width = "100%",
+  out.height = "100%",
+  dpi = 600,
+  fig.align='center', 
+  message=FALSE, 
+  warning=FALSE
 )
 ```
 
@@ -41,9 +51,9 @@ load("dataset.RData")
 
 # Enriching and tyding data
 
-We join our paragraphs- and speaker-tibbles by their speaker-id before tidying up the data.
-Tidying up this dataset means pivoting the speech content in a way, that every row contains only one word of a speech.
-This process blows up the row count from ~250.000 rows up to 14.100.000 rows, which makes this sequence of steps necessary.
+We join our paragraphs- and speaker-tibbles by their speaker id before tidying up the data.
+Tidying up this dataset means pivoting the speech content in such a way, that every row contains only one word.
+This process blows up the row count from ~250.000 rows up to 14.100.000 rows, which makes this sequence of steps necessary to reduce the size of the tibbles that must be joined
 
 We remove common stop words, as provided by the stopwords package, from the speeches.
 
@@ -52,13 +62,19 @@ We remove common stop words, as provided by the stopwords package, from the spee
 speech <- protocols$paragraphs
 
 # we have to clean up protocols$speakers ids, there are some ids which are used multiple times, 
-speech_and_speaker <- merge(x = protocols$paragraphs, y = protocols$speakers, by.x = "speaker_id", by.y = "id", all.x = TRUE) 
+speech_and_speaker <- merge(x = protocols$paragraphs, 
+                            y = protocols$speakers, 
+                            by.x = "speaker_id", 
+                            by.y = "id", 
+                            all.x = TRUE) 
 
 tidy_speeches <- speech_and_speaker %>% 
   drop_na(fraktion) %>%
   unnest_tokens(word, content)
 
-stop_german <- data.frame(word = stopwords::stopwords("german", source = "stopwords-iso"), stringsAsFactors = FALSE)
+stop_german <- data.frame(word = stopwords::stopwords("german", 
+                                                      source = "stopwords-iso"), 
+                          stringsAsFactors = FALSE)
 
 tidy_speeches_no_stop <- tidy_speeches %>% anti_join(stop_german, by = c("word"))
 ```
@@ -66,8 +82,7 @@ tidy_speeches_no_stop <- tidy_speeches %>% anti_join(stop_german, by = c("word")
 
 We start with some simple exploratory steps to get a feeling for our dataset. So we count word occurences and graph them in a simple stacked graph.
 
-
-```{r}
+```{r fig.height=8}
 word_occurences <- tidy_speeches_no_stop %>%
   count(word, sort = TRUE)
 
@@ -85,11 +100,18 @@ word_occurences %>%
 There is a lot of noise in this graph. Words that are used in a greeting or are just part of the procedure.
 Let's remove the worst offenders from the dataset.
 
-```{r fig.align='center', message=FALSE, warning=FALSE, out.width='80%'}
+```{r fig.height=8}
 
-parliamentary_stop_words <-as_tibble(c("herr", "herren", "damen", "frau", "fraktion", "antrag", "kollegen", "kolleginnen", "liebe", "kollege", "kollegin", "frage", "präsident", "geehrte", "geehrten", "herzlich", "herzliches", "herzlichen", "dr"))
+parliamentary_stop_words <-as_tibble(c("herr", "herren", "damen", "frau", 
+                                       "fraktion", "antrag", "kollegen", 
+                                       "kolleginnen", "liebe", "kollege", 
+                                       "kollegin", "frage", "präsident", 
+                                       "geehrte", "geehrten", "herzlich", 
+                                       "herzliches", "herzlichen", "dr"))
 
-tidy_speeches_no_parliamentary_stop <- tidy_speeches_no_stop %>% anti_join(parliamentary_stop_words, by = c("word" = "value"))
+tidy_speeches_no_parliamentary_stop <- tidy_speeches_no_stop %>% 
+                                       anti_join(parliamentary_stop_words, 
+                                                 by = c("word" = "value"))
 
 word_occurences <- tidy_speeches_no_parliamentary_stop %>%
   count(word, sort = TRUE)
@@ -102,8 +124,7 @@ word_occurences %>%
   xlab(NULL) +
   coord_flip()
 ```
-Much better. A computer linguist might be able to only drop complete phrases from the dataset, but we are currently limited to this blunt approach.
-
+Much better. A computer linguist might be able to drop only common phrases from the dataset instead of dropping words alltogether. But we are currently limited to this more blunt approach.
 
 # Word occurences per party
 
@@ -113,7 +134,6 @@ Let's compare the different fractions. Can we identify significant differences i
 
 word_occurences_per_party <- tidy_speeches_no_parliamentary_stop  %>%
   select(fraktion, word) %>%
-  add_column(count = 1L) %>%
   group_by(fraktion) %>%
   count(word, sort=TRUE)
 
@@ -123,35 +143,10 @@ top_words_per_party <- word_occurences_per_party %>%
 
 top_words_per_party
 
-
 ```
 We can see differencees but this approach is limited by the wildly varying n-values. This makes it difficult to make conclusions. We need a more relative approach.
 
-
-# Compute relative occurences 
-
-We compute relative word occurences per fraction by dividing their word occurence count by the sum of words used in their speeches. Using this approach reduces the influence of the speaking time alloted to each fraction on their total word count. It is more suited to highlight the topics a fraction is invested in and therefore use their speaking time for.
-
-
-```{r fig.align='center', message=FALSE, warning=FALSE, out.width='80%'}
-words_per_party <- tidy_speeches_no_parliamentary_stop  %>%
-  select(fraktion, word) %>%
-  group_by(fraktion) %>%
-  count()
-
-# Get all fraction names
-relative_word_occurences_per_party <- word_occurences_per_party %>% 
-  left_join(words_per_party, by=c("fraktion" = "fraktion")) %>%
-  mutate(relative_occurence = n.x/n.y) %>%
-  left_join(word_occurences, by=c("word"="word")) %>%
-  rename(absolute_number = n, total_words_per_party = n.y, occurences_per_party = n.x)
-
-
-relative_word_occurences_per_party %>% filter(word=="deutschland")
-
-```
-This snippet shows the relative_occurence of the word word "deutschland" for each fraction. 
-It shows as well that "fraktionslos" has very few total spoken words. We will drop this fraction for future analysis to prevent it from skewing results
+We start of by reshaping our data into a wider format, having one word per row and the matching occurence counts in a column per fraction. We drop the fraction "fraktionslos" as well. Speeches from this "fraction" contain mostly speeches from external speakers. Their very low n-values carry the risk of skewing the results easily.
 
 
 ```{r}
@@ -160,36 +155,32 @@ coalesce_all_columns <- function(df) {
   return(coalesce(!!! as.list(df)))
 }
 
-relative_word_occurences <- relative_word_occurences_per_party %>%
-  select(-c(occurences_per_party, total_words_per_party)) %>%
-  pivot_wider(names_from=fraktion, values_from=relative_occurence) %>%
+word_occurences_per_party_wide <- word_occurences_per_party %>%
+  pivot_wider(names_from=fraktion, values_from=n) %>%
   select(-fraktionslos) %>%
   ungroup() %>%
   group_by(word) %>% 
   summarise_all(coalesce_all_columns) %>%
-  arrange(desc(absolute_number)) %>% 
   na.omit()
 
-relative_word_occurences %>% head(10)  
-```
+word_occurences_per_party_wide %>% head(10)  
 
-This step reshaped the data, so that we now have a word per row and a column per fraction listing the associated matching relative occurence. We have dropped all words from this dataset which weren't used by all fractions. 
+
+```
 
 
 # Test if fractions use some words more than others
 
-We use the chi-square-test and it's standardized residuals to test for correlation between words and fractions. A positive residual shows that the observed value is bigger than if the data were random. Therefore we can sort the residuals-table by residual per fraction to show which words are used especially often by this fraction. We can't interpret the amount of the residuals as usual due to the standardization of the word occurences.
+We use the chi-square-test and it's standardized residuals to test for correlation between words and fractions. A positive residual shows that the observed occurences are bigger than expected if the data were random. Therefore we can sort the words by residual per fraction to see which words are used especially often by a fraction. 
 
-```{r fig.align='center', message=FALSE, warning=FALSE, out.width='80%'}
+```{r}
 
-chi_data <- relative_word_occurences %>% select(-absolute_number) 
-
-chi_data <- chi_data %>% as.data.frame()
+chi_data <- word_occurences_per_party_wide %>% as.data.frame()
 rownames(chi_data) = chi_data$word
 
 chisq <- chisq.test(chi_data[-1])
 
-res = as.tibble(chisq$residuals, rownames = "word") 
+res = as.tibble(chisq$stdres, rownames = "word") 
 names = res$word
 
 entries = 20
@@ -201,7 +192,12 @@ top_afd <- res %>%
   as.matrix()
 
 plot_matrix <- function(x, name){
-  return(ggcorrplot(x, title = name) + scale_fill_gradient2(limit = c(min(x)*1.5, max(x)*1.5), low = "blue", high = "red", mid = "white", midpoint = mean(x)))
+  return(ggcorrplot(x, title = name) + 
+           scale_fill_gradient2(limit = c(min(x)*1.5, max(x)*1.5), 
+                                low = "blue", 
+                                high = "red", 
+                                mid = "white", 
+                                midpoint = mean(x)))
 }
 
 afd_plot <- plot_matrix(top_afd, "AfD")
@@ -209,11 +205,11 @@ afd_plot
 
 ```
 
-This plot shows that the AfD is using words like "Bürger", "Altparteien", "EU", "Merkel", "AfD", usw. more often than every other fraction.
-Similiar graphs for other parties are created below. It is the responsibility of the reader to interpret these plots.
+This plot shows that the AfD is using words like "Bürger", "Merker", "Altparteien", "Regierung", "EU", "Migraten", usw. more often than every other fraction.
+Similiar graphs for other parties are created below.
 
 
-```{r fig.align='center', message=FALSE, warning=FALSE, out.width='80%'}
+```{r}
 
 top_cdu <- res %>%
   arrange(desc(`cdu/csu`)) %>%
