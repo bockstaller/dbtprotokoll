@@ -1,5 +1,5 @@
 ---
-title: "WordOccurences"
+title: "Differing word usage between fractions"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Stimmung}
@@ -41,7 +41,8 @@ library(ggcorrplot)
 library(cowplot)
 ```
 
-Hypothesis: **The political fractions use a different tone and words during their speeches. This should be observable in our data.**
+Hypothesis: 
+**The political fractions use a different tone and words during their speeches. This should be observable in our data.**
 
 We start by loading a protocol dataset consisting out of previously parsed xml-protocols from disk into our global environment.
 
@@ -95,8 +96,6 @@ word_occurences %>%
   coord_flip()
 ```
 
-# Remove parliamentary stop words
-
 There is a lot of noise in this graph. Words that are used in a greeting or are just part of the procedure.
 Let's remove the worst offenders from the dataset.
 
@@ -138,7 +137,7 @@ word_occurences_per_party <- tidy_speeches_no_parliamentary_stop  %>%
   count(word, sort=TRUE)
 
 top_words_per_party <- word_occurences_per_party %>%
-  top_n(20) %>%
+  top_n(5) %>%
   group_split()
 
 top_words_per_party
@@ -167,9 +166,6 @@ word_occurences_per_party_wide %>% head(10)
 
 
 ```
-
-
-# Test if fractions use some words more than others
 
 We use the chi-square-test and it's standardized residuals to test for correlation between words and fractions. A positive residual shows that the observed occurences are bigger than expected if the data were random. Therefore we can sort the words by residual per fraction to see which words are used especially often by a fraction. 
 
