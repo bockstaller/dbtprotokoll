@@ -23,7 +23,7 @@ parse_protocol <- function(path, check_schema = TRUE){
   print(stringr::str_c("Parsing: ", path))
   protocol <- xml2::read_xml(path)
   if(check_schema){
-    schema <- xml2::read_xml("./protokolle/dbtplenarprotokoll-schema.xsd")
+    schema <- xml2::read_xml("./data/dbtplenarprotokoll-schema.xsd")
     stopifnot("XML Schema is not as expected." = xml2::xml_validate(protocol, schema))
   }
 
