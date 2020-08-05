@@ -38,7 +38,6 @@ library(curl)
 library(magrittr)
 library(corrplot)
 library(ggcorrplot)
-library(cowplot)
 ```
 
 Hypothesis: 
@@ -56,10 +55,9 @@ We join our paragraphs- and speaker-tibbles by their speaker id before tidying u
 Tidying up this dataset means pivoting the speech content in such a way, that every row contains only one word.
 This process blows up the row count from ~250.000 rows up to 14.100.000 rows, which makes this sequence of steps necessary to reduce the size of the tibbles that must be joined
 
-We remove common stop words, as provided by the stopwords package, from the speeches.
+We start with some simple exploratory steps to get a feeling for our dataset. So we count word occurences and graph them in a simple stacked graph.
 
-
-```{r}
+```{r fig.height=8}
 speech <- protocols$paragraphs
 
 # we have to clean up protocols$speakers ids, there are some ids which are used multiple times, 
@@ -73,17 +71,29 @@ tidy_speeches <- speech_and_speaker %>%
   drop_na(fraktion) %>%
   unnest_tokens(word, content)
 
+
+
+raw_word_occurences <- tidy_speeches %>%
+  count(word, sort = TRUE)
+
+raw_word_occurences %>%
+  top_n(40) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n)) +
+  geom_col() +
+  xlab(NULL) +
+  coord_flip()
+```
+
+Let's remove common stop words, as provided by the stopwords package, from the speeches.
+
+```{r fig.height=8}
 stop_german <- data.frame(word = stopwords::stopwords("german", 
                                                       source = "stopwords-iso"), 
                           stringsAsFactors = FALSE)
 
 tidy_speeches_no_stop <- tidy_speeches %>% anti_join(stop_german, by = c("word"))
-```
 
-
-We start with some simple exploratory steps to get a feeling for our dataset. So we count word occurences and graph them in a simple stacked graph.
-
-```{r fig.height=8}
 word_occurences <- tidy_speeches_no_stop %>%
   count(word, sort = TRUE)
 
@@ -162,7 +172,9 @@ word_occurences_per_party_wide <- word_occurences_per_party %>%
   summarise_all(coalesce_all_columns) %>%
   na.omit()
 
-word_occurences_per_party_wide %>% head(10)  
+word_occurences_per_party_wide %>% 
+  arrange(desc(`cdu/csu`), desc(afd), desc(spd), desc(fdp), desc(dielinke), desc(`bündnis90/diegrünen`))  %>% 
+  head(10)  
 
 
 ```
