@@ -12,7 +12,7 @@ download_files(links, directory = "./protokolle")
 \item{directory}{Directory where the files should be stored}
 }
 \value{
-No return values but the downloaded protocols are stored in the specified directory
+A vector with all paths to the downloaded files
 }
 \description{
 Iterates over a vector of links to files and downloads them into the target directory

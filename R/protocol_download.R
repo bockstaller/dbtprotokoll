@@ -8,7 +8,7 @@
 #'The current default value is equivalent to the service path for the 19th period. This may change in the future.
 #'It is necessary to use the devtools of the browser to get this information.
 #'
-#'@return No return values but the downloaded protocols are stored in the specified directory
+#'@return A vector with all paths to the downloaded files
 #'
 #'@examples
 #'download_protocols()
@@ -85,7 +85,7 @@ get_protocol_links <- function(base_url = "https://www.bundestag.de", registry_u
 #'
 #'@param directory Directory where the files should be stored
 #'
-#'@return No return values but the downloaded protocols are stored in the specified directory
+#'@return A vector with all paths to the downloaded files
 #'
 #'@examples
 #'parse_protocols(links = c("https://www.bundestag.de/resource/blob/704800/a2bb9229c2e19bbd633d30c747b41c62/19171-data.xml","https://www.bundestag.de/resource/blob/704394/b1d0626827462b96db4e2b7821b1c0cb/19170-data.xml"))

@@ -18,7 +18,7 @@ The current default value is equivalent to the service path for the 19th period.
 It is necessary to use the devtools of the browser to get this information.}
 }
 \value{
-No return values but the downloaded protocols are stored in the specified directory
+A vector with all paths to the downloaded files
 }
 \description{
 This function gets all download links and downloads the linked files into the specified folder

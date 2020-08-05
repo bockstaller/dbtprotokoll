@@ -8,7 +8,8 @@ parse_protocols(
   path = "protokolle",
   start = NULL,
   end = NULL,
-  instance_count = NULL
+  instance_count = NULL,
+  check_schema = TRUE
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ parse_protocols(
 \item{end}{Name of the protocol you want to end with (optional). Must succeed start in alphabetical order}
 
 \item{instance_count}{Specifies the number of r instances that will be used to parse the protocols. The default is the machines core count.}
+
+\item{check_schema}{A logical value indicating whether you want to check compatibility of the xml schema used in your xml file.}
 }
 \value{
 Three tibbles in a named list:
