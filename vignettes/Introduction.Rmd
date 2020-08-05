@@ -117,7 +117,7 @@ print(parsed_protocol$comments)
 Parsing the complete dataset can be easily achieved by using "parse_protocols" and specifying the range. This function will instanciate as many parallel parsers as your system offers to speed up the process. It returns the same tibble structure, but cleaned up. Duplicated rows get removed.
 
 ```{r}
-parsed_protocols <- dbtprotokoll::parse_protocols(start = "19001-data.xml", end = "19010-data.xml", check_schema = FALSE)
+parsed_protocols <- dbtprotokoll::parse_protocols(start = "19001-data.xml", end = "19010-data.xml")
 print(parsed_protocols)
 ```
 

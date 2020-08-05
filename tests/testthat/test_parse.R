@@ -26,7 +26,7 @@ test_roles <- tibble::tibble("id" = c("11111111", "22222222", "33333333"),
 
 context("parse_protocols")
 test_that("parse minimal.xml", {
-  minimal <- parse_protocol("./minimal.xml", check_schema = FALSE)
+  minimal <- parse_protocol("./minimal.xml", check_schema = TRUE )
   expect_type(minimal, "list")
   expect_identical(minimal[[1]], test_speakers)
   expect_identical(minimal[[2]], test_paragraphs)
@@ -36,7 +36,7 @@ test_that("parse minimal.xml", {
 
 test_that("parse single protocol", {
   expect_error(parse_protocol(NULL, check_schema = FALSE))
-  example_prot <- parse_protocol("./19001-data.xml", check_schema = FALSE)
+  example_prot <- parse_protocol("./19001-data.xml", check_schema = TRUE)
   expect_s3_class(example_prot[[1]], "tbl_df")
 
   expect_named(example_prot[[1]], c("id", "titel", "vorname", "nachname", "ortszusatz", "fraktion", "rolle"))
@@ -63,5 +63,5 @@ test_that("parse single protocol", {
 
 test_that("parse multiple protocols", {
   expect_identical(parse_protocols(path = "testdataset_multiple_protocols", check_schema = FALSE), parse_protocol("./minimal.xml", check_schema = FALSE))
-  expect_error(parse_protocols(start = "minimal.xml", check_schema = FALSE))
+  expect_error(parse_protocols(start = "minimal.xml", check_schema = TRUE))
 })
