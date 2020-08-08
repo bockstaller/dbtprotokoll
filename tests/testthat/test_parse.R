@@ -62,6 +62,29 @@ test_that("parse single protocol", {
 })
 
 test_that("parse multiple protocols", {
-  expect_identical(parse_protocols(path = "testdataset_multiple_protocols", check_schema = FALSE), parse_protocol("./minimal.xml", check_schema = FALSE))
+  expect_identical(parse_protocols(path = "testdataset_multiple_protocols", start = "minimal.xml", check_schema = FALSE), parse_protocol("./minimal.xml", check_schema = FALSE))
   expect_error(parse_protocols(start = "minimal.xml", check_schema = TRUE))
+
+  multi_protocols <- parse_protocols(path = "testdataset_multiple_protocols")
+
+  expect_named(multi_protocols[[1]], c("id", "titel", "vorname", "nachname", "ortszusatz", "fraktion", "rolle"))
+  expect_named(multi_protocols[[2]], c("id", "speech", "speech_type", "speaker_id", "moderator", "class", "content", "j_1_gate"))
+  expect_named(multi_protocols[[3]], c("id", "paragraph_id", "content"))
+  expect_named(multi_protocols[[4]], c("id", "rolle.rolle_lang", "rolle.rolle_kurz"))
+
+  for(i in 1:6){
+    expect_type(multi_protocols[[1]][[i]], "character")
+  }
+  expect_type(multi_protocols[[1]]$rolle, "logical")
+  expect_type(multi_protocols[[2]]$id, "integer")
+  expect_type(multi_protocols[[2]]$j_1_gate, "logical")
+  for(i in 2:7){
+    expect_type(multi_protocols[[2]][[i]], "character")
+  }
+    expect_type(multi_protocols[[3]]$id, "double")
+  expect_type(multi_protocols[[3]]$paragraph_id, "character")
+  expect_type(multi_protocols[[3]]$content, "character")
+  for(i in 1:3){
+    expect_type(multi_protocols[[4]][[i]], "character")
+  }
 })
