@@ -123,6 +123,6 @@ party_mean_word_length <- tibble("party" = parties,
 party_word_lengths_pct <- bind_rows(lapply(1:6, function(i){
   return(mutate(percentage(party_word_lengths[[i]]), "party" = parties[i]))}))
 
-ggplot(party_mean_word_length) + geom_col(aes(x = party, y = count)) + scale_fill_manual(values=party_colors)
+ggplot(party_mean_word_length) + geom_col(aes(x = party, y = count, fill = party)) + scale_fill_manual(values=party_colors)
 ggplot(party_word_lengths_pct) + geom_col(aes(x = lgt, y = pct, fill = party), position = "dodge") + xlim(0,20)  + scale_fill_manual(values=party_colors)
 ```
