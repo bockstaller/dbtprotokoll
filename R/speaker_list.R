@@ -2,7 +2,7 @@
 #speakers(read_xml("protokolle/19003-data.xml"))
 
 #returns a tibble of all the names of the speakers
-speakers <- function(protokoll){
+speaker_list <- function(protokoll){
   speakerlist <- xml2::xml_find_all(protokoll, ".//rednerliste")
   speaker <- xml2::xml_find_all(speakerlist, ".//redner")
   speakertbs <- sapply(speaker, name_to_tibble)

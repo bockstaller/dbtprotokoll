@@ -28,7 +28,7 @@ parse_protocol <- function(path, check_schema = TRUE){
     stopifnot("XML Schema is not as expected." = xml2::xml_validate(protocol, schema))
   }
 
-  speakers_roles <- split_roles(speakers(protocol))
+  speakers_roles <- split_roles(speaker_list(protocol))
   commenttb <- comment_list(protocol)
   paragraphtb <- paragraph_list(protocol)
   return(list("speakers"=speakers_roles[[1]],"paragraphs"=paragraphtb, "comments"=commenttb, "roles"=speakers_roles[[2]]))
