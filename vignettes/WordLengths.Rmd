@@ -40,7 +40,7 @@ speaches <- filter(protocols[[2]], is.na(moderator))
 
 ## Analysis of different word lengths between academics and non-academics
 
-We divde the speakers depending into academics and non-academics depending on the occurance of an entry in "titel".
+We divde the speakers into academics and non-academics depending on the occurance of an entry in "titel".
 
 ```{r}
 academics <- filter(protocols[[1]], !is.na(titel))
@@ -48,7 +48,7 @@ nonacademics <- filter(protocols[[1]], is.na(titel))
 ```
 
 Now we want to get the mean word length and distribution for word lengths for each group.
-Because we will need this once more for our second analysis we have small functions for that: 
+Because we will need this once more for our second analysis, we have small functions for that: 
 
 The function word_length counts the lengths of words by counting all letters in them.
 ```{r}
@@ -102,7 +102,7 @@ ggplot(titel_word_lengths) + geom_col(aes(x = lgt, y = pct, fill = titel), posit
 
 ## Comparison of different word lengths between parties
 
-Simillar to before we have a function to get the distribution of word lengths for speakers of different parties.
+Similar to before we have a function to get the distribution of word lengths for speakers of different parties.
 ```{r}
 party_word_length <- function(speaches, speakers, party){
   party_members <- filter(speakers, fraktion == party)
