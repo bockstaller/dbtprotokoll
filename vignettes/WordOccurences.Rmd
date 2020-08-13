@@ -53,7 +53,7 @@ load("dataset.RData")
 
 We join our paragraphs- and speaker-tibbles by their speaker id before tidying up the data.
 Tidying up this dataset means pivoting the speech content in such a way, that every row contains only one word.
-This process blows up the row count from ~250.000 rows up to 14.100.000 rows, which makes this sequence of steps necessary to reduce the size of the tibbles that must be joined
+This process blows up the row count from ~250.000 rows up to 14.100.000 rows, which makes this sequence of steps necessary to reduce the size of the tibbles that must be joined.
 
 We start with some simple exploratory steps to get a feeling for our dataset. So we count word occurences and graph them in a simple stacked graph.
 
@@ -133,7 +133,7 @@ word_occurences %>%
   xlab(NULL) +
   coord_flip()
 ```
-Much better. A computer linguist might be able to drop only common phrases from the dataset instead of dropping words alltogether. But we are currently limited to this more blunt approach.
+Much better. A computational linguist might be able to drop only common phrases from the dataset instead of dropping words alltogether. But we are currently limited to this more blunt approach.
 
 # Word occurences per party
 
@@ -153,7 +153,7 @@ top_words_per_party <- word_occurences_per_party %>%
 top_words_per_party
 
 ```
-We can see differencees but this approach is limited by the wildly varying n-values. This makes it difficult to make conclusions. We need a more relative approach.
+We can see differences but, this approach is limited by the wildly varying n-values. This makes it difficult to draw conclusions, hence we need a more relative approach.
 
 We start of by reshaping our data into a wider format, having one word per row and the matching occurence counts in a column per fraction. We drop the fraction "fraktionslos" as well. Speeches from this "fraction" contain mostly speeches from external speakers. Their very low n-values carry the risk of skewing the results easily.
 
@@ -179,7 +179,7 @@ word_occurences_per_party_wide %>%
 
 ```
 
-We use the chi-square-test and it's standardized residuals to test for correlation between words and fractions. A positive residual shows that the observed occurences are bigger than expected if the data were random. Therefore we can sort the words by residual per fraction to see which words are used especially often by a fraction. 
+We use the chi-square-test and its standardized residuals to test for correlation between words and fractions. A positive residual shows that the observed occurences are bigger than expected if the data were random. Therefore we can sort the words by residual per fraction to see which words are used especially often by a fraction. 
 
 ```{r}
 
@@ -213,7 +213,7 @@ afd_plot
 
 ```
 
-This plot shows that the AfD is using words like "Bürger", "Merker", "Altparteien", "Regierung", "EU", "Migraten", usw. more often than every other fraction.
+This plot shows that the AfD is using words like "Bürger", "Merkel", "Altparteien", "Regierung", "EU", "Migraten", usw. more often than every other fraction.
 Similiar graphs for other parties are created below.
 
 

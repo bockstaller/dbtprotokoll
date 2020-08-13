@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 ## Overview Open Data Bundestag
 
-The plenary meetings of the German Bundestags are protocoled by a team of stenographs.
+The plenary meetings of the German Bundestag are protocolled by a team of stenographs.
 These protocols get published as .pdf, .txt, and thanks to the open data initiative of the Bundestag as a .xml file as well. 
 
 ![First page of a plenary protocol](images/introduction/Protokoll1.png){width=45%}
@@ -39,7 +39,7 @@ library(dbtprotokoll)
 paths <- download_protocols()
 ```
 
-Normaly it isn't necessary to touch the parameters base_url and registry_url those seem to be fixed for the 19. election period. What we could change is the directory the protocols get saved in, but we leave for now on the default. A local directory named "protokolle". 
+Normaly it isn't necessary to touch the parameters base_url and registry_url, those seem to be fixed for the 19. election period. What we could change is the directory the protocols get saved in, but we leave the default value for now: a local directory named "protokolle". 
 
 ```{r}
 print(paths[1:10])
@@ -49,7 +49,7 @@ A call to download_protocols returns a vector of paths to the downloaded files.
 
 ## Parsing the protocols
 
-Let's inspect one of these protocol files using the package xml2
+Let's inspect one of these protocol files using the package xml2:
 
 ```{r}
 protocol <- xml2::read_xml(paths[1])
@@ -57,21 +57,21 @@ protocol <- xml2::read_xml(paths[1])
 protocol
 ```
 
-It consists out of a header section with some basic information about the plenary session and the protocol.
-Under there are four child elements:
+It consists of a header section with some basic information about the plenary session and the protocol.
+Under this are four child elements:
 
 - vorspann
 - sitzungsverlauf
 - anlagen
 - rednerliste
 
-The package is able to parse information out of "sitzungsverlauf" and "rednerliste".
+The package "dbtprotokoll" is able to parse information out of "sitzungsverlauf" and "rednerliste".
 
 ```{r}
 print(xml2::xml_find_all(protocol, ".//rede")[[1]])
 ```
 
-This is the structure of a "rede"-element which is a child of "sitzungsverlauf". It documents a speech hold by a member of the bundestag, moderation by the leader of the plenary-session (for example the president) and general remarks made by other members of the bundestag like applause or interjections. Other parts of the "sitzungsverlauf" are interesting as well but are very difficult to analyse without a linguistic background. Therefore we avoided parsing them.
+This is the structure of a "rede"-element which is a child of "sitzungsverlauf". It documents a speech hold by a member of the bundestag, moderation by the leader of the plenary-session (for example the president) and general remarks made by other members of the bundestag like applause or interjections. Other parts of the "sitzungsverlauf" are interesting as well but are very difficult to analyse without a linguistic background. Therefore we did not bother parsing them.
 
 ```{r}
 print(xml2::xml_find_all(protocol, ".//rednerliste")[[1]])
@@ -82,7 +82,7 @@ The "rednerliste" element contains the details of every member of the bundestag 
 ### Using dbtprotokoll to parse a single protocol
 
 To parse a single protocol with dbtprotokoll, the function parse_protocol is used. 
-Its arguments are a string for the file path and the optional "check_schema" argument. If check_schema is TRUE (its default value), the xml2-function "xml_validate" will be used to validate that the xml document given is indeed written in the correct xml schema. To check this, we downloaded the file "dbtplenarprotokolle-data.dtd and converted it into an xsd file.
+Its arguments are a string for the file path and the optional "check_schema" argument. If check_schema is TRUE (its default value), the xml2-function "xml_validate" will be used to validate that the xml document given is indeed written in the correct xml schema. To check this, we downloaded the file "dbtplenarprotokolle-data.dtd" and converted it into an xsd file.
 If the schema is correct (or check_schema is FALSE), the function will read the xml file given in the path-argument and start extracting information from the xml. It will then return a named list of four tibbles containing information about the plenary meeting:
 
 ```{r}
@@ -114,7 +114,7 @@ print(parsed_protocol$comments)
 
 ### Parsing the complete dataset
 
-Parsing the complete dataset can be easily achieved by using "parse_protocols" and specifying the range. This function will instanciate as many parallel parsers as your system offers to speed up the process. It returns the same tibble structure, but cleaned up. Duplicated rows get removed.
+Parsing the complete dataset can be easily achieved by using "parse_protocols" and specifying the range. This function will instanciate as many parallel parsers as your system offers to speed up the process. It returns the same tibble structure, but cleaned up. Duplicated rows within the speakers- and roles tibble get removed.
 
 ```{r}
 parsed_protocols <- dbtprotokoll::parse_protocols(start = "19001-data.xml", end = "19010-data.xml")
@@ -138,7 +138,11 @@ print(parsed_protocols)
 
 ## Running analysis
 
-The data stored in the tibbles can be analysed like always.
+The data stored in the tibbles can be analysed like always. For nicer presentation of analyses, the dbtprotokoll package offers a variable called "party_colors". It is a named atomic vector of hexadecimal codes (saved as strings) of the partys' asigned colors.
+
+```{r}
+party_colors
+```
 
 ### Run a simple analysis
 
