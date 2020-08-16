@@ -33,9 +33,11 @@ These protocols get published as .pdf, .txt, and thanks to the open data initiat
 
 We start of by importing the package as usual and downloading the protocols from the website of the bundestag.
 
-```{r eval=FALSE, warning=FALSE, include=FALSE, results='hide'}
+```{r}
 library(dbtprotokoll)
+```
 
+```{r eval=FALSE, warning=FALSE, include=FALSE, results='hide'}
 paths <- download_protocols()
 ```
 

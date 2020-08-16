@@ -15,7 +15,7 @@
 #'"comments": A tibble of all comments given during speeches and about reactions to speeches, containing speech id and comment id as well as content of the comment.
 #'
 #'@examples
-#'parse_protocol("./protokolle/19007-data.xml")
+#'parse_protocol("./vignettes/protokolle/19007-data.xml")
 #'
 #'@export
 parse_protocol <- function(path, check_schema = TRUE){

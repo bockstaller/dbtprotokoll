@@ -98,7 +98,7 @@ get_protocol_links <- function(base_url = "https://www.bundestag.de", registry_u
 #'@return A vector with all paths to the downloaded files
 #'
 #'@examples
-#'parse_protocols(links = c("https://www.bundestag.de/resource/blob/704800/a2bb9229c2e19bbd633d30c747b41c62/19171-data.xml","https://www.bundestag.de/resource/blob/704394/b1d0626827462b96db4e2b7821b1c0cb/19170-data.xml"))
+#'parse_protocols(links = "https://www.bundestag.de/resource/blob/704800/a2bb9229c2e19bbd633d30c747b41c62/19171-data.xml")
 #'
 #'@export
 download_files <- function(links, directory = "./protokolle"){

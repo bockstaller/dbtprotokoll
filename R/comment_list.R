@@ -39,10 +39,10 @@ comment_list <- function(protocol){
 }
 
 clean_comments <- function(commenttb){
-  commenttb <- commenttb %>% dplyr::filter(!is.na(speaker_id))
-  commenttb <- commenttb %>% dplyr::filter(speaker_id != as.character(10000L))
-  commenttb <- commenttb %>% dplyr::filter(speaker_id != "")
-  return(commenttb %>% dplyr::select(-speaker_id))
+  commenttb <- dplyr::filter(commenttb, !is.na(speaker_id))
+  commenttb <- dplyr::filter(commenttb, speaker_id != as.character(10000L))
+  commenttb <- dplyr::filter(commenttb, speaker_id != "")
+  return(dplyr::select(commenttb, -speaker_id))
 }
 
 #testing
