@@ -1,6 +1,9 @@
 #'Wraps get_protocol_links and download_files to get all protocol files in a single call
 #'
-#'This function gets all download links and downloads the linked files into the specified folder
+#'This function gets all download links and downloads the linked files into the specified folder.
+#'There exist no tests for it, because this function interacts directly with external systems and causing load and expenses for the operator of them.
+#'Testing against them is considered bad practice. I could have mocked the server and it's responses, but this is not worth the effort given the fact that
+#'this function uses unsupported interfaces anyway.
 #'
 #'@param base_url The URL of the bundestag.de-domain this should continue to be "https://www.bundestag.de
 #'
@@ -27,6 +30,9 @@ download_protocols <- function(base_url = "https://www.bundestag.de", registry_u
 #'Scrape the download-links for the plenary protocols from the bundestag website
 #'
 #'This function queries a file-registry-enpoint of the bundestag.de website repeadetly, to scrape the direct download links.
+#'There exist no tests for it, because this function interacts directly with external systems and causing load and expenses for the operator of them.
+#'Testing against them is considered bad practice. I could have mocked the server and it's responses, but this is not worth the effort given the fact that
+#'this function uses unsupported interfaces anyway.
 #'
 #'@param base_url The URL of the bundestag.de-domain this should continue to be "https://www.bundestag.de
 #'
@@ -80,6 +86,10 @@ get_protocol_links <- function(base_url = "https://www.bundestag.de", registry_u
 #'Download specified protocol files from the bundestag website
 #'
 #'Iterates over a vector of links to files and downloads them into the target directory
+#'There exist no tests for it, because this function interacts directly with external systems and causing load and expenses for the operator of them.
+#'Testing against them is considered bad practice. I could have mocked the server and it's responses, but this is not worth the effort given the fact that
+#'this function uses unsupported interfaces anyway.
+#'
 #'
 #'@param links A vector of characters containing links to the files to download
 #'
