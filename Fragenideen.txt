@@ -1,4 +1,0 @@
-1. Korrelation akademischer Titel - Fraktion
-2. Korrelation akademischer Titel - durchschnittliche Wortlänge
-3. Kommentare: Beifall: wer bekommt wie viel, wer gibt wie viel applaus, wer gibt wem wie viel applaus
-4. sentiment analysis in reden
