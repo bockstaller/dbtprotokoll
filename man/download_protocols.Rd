@@ -21,7 +21,10 @@ It is necessary to use the devtools of the browser to get this information.}
 A vector with all paths to the downloaded files
 }
 \description{
-This function gets all download links and downloads the linked files into the specified folder
+This function gets all download links and downloads the linked files into the specified folder.
+There exist no tests for it, because this function interacts directly with external systems and causing load and expenses for the operator of them.
+Testing against them is considered bad practice. I could have mocked the server and it's responses, but this is not worth the effort given the fact that
+this function uses unsupported interfaces anyway.
 }
 \examples{
 download_protocols()

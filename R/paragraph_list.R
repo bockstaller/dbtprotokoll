@@ -8,7 +8,7 @@
 #'
 #' @examples
 #' paragraph_list(read_xml("./protokolle/19007-data.xml"))
-#' @importFrom magrittr %>%
+
 paragraph_list <- function(protocol){
 
   #create data frame of fitting shape to collect comments
@@ -98,9 +98,9 @@ paragraph_list <- function(protocol){
 }
 
 clean_paragraphs <- function(paragraph_tb){
-  paragraph_tb <- paragraph_tb %>% dplyr::filter(!is.na(speaker_id))
-  paragraph_tb <- paragraph_tb %>% dplyr::filter(speaker_id != as.character(10000L))
-  paragraph_tb <- paragraph_tb %>% dplyr::filter(speaker_id != "")
+  paragraph_tb <- dplyr::filter(paragraph_tb, !is.na(speaker_id))
+  paragraph_tb <- dplyr::filter(paragraph_tb, speaker_id != as.character(10000L))
+  paragraph_tb <- dplyr::filter(paragraph_tb, speaker_id != "")
   return(paragraph_tb)
 }
 

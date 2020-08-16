@@ -33,7 +33,7 @@ These protocols get published as .pdf, .txt, and thanks to the open data initiat
 
 We start of by importing the package as usual and downloading the protocols from the website of the bundestag.
 
-```{r warning=FALSE, include=FALSE, results='hide'}
+```{r eval=FALSE, warning=FALSE, include=FALSE, results='hide'}
 library(dbtprotokoll)
 
 paths <- download_protocols()
@@ -41,7 +41,7 @@ paths <- download_protocols()
 
 Normaly it isn't necessary to touch the parameters base_url and registry_url, those seem to be fixed for the 19. election period. What we could change is the directory the protocols get saved in, but we leave the default value for now: a local directory named "protokolle". 
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 print(paths[1:10])
 ```
 
@@ -52,7 +52,7 @@ A call to download_protocols returns a vector of paths to the downloaded files.
 Let's inspect one of these protocol files using the package xml2:
 
 ```{r}
-protocol <- xml2::read_xml(paths[1])
+protocol <- xml2::read_xml('./protokolle/19001-data.xml')
 
 protocol
 ```
@@ -86,7 +86,7 @@ Its arguments are a string for the file path and the optional "check_schema" arg
 If the schema is correct (or check_schema is FALSE), the function will read the xml file given in the path-argument and start extracting information from the xml. It will then return a named list of four tibbles containing information about the plenary meeting:
 
 ```{r}
-parsed_protocol <- parse_protocol(paths[1], check_schema = FALSE)
+parsed_protocol <- parse_protocol("./protokolle/19001-data.xml")
 print(parsed_protocol)
 ```
 

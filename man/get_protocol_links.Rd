@@ -23,6 +23,9 @@ A vector of complete links to the protocol files.
 }
 \description{
 This function queries a file-registry-enpoint of the bundestag.de website repeadetly, to scrape the direct download links.
+There exist no tests for it, because this function interacts directly with external systems and causing load and expenses for the operator of them.
+Testing against them is considered bad practice. I could have mocked the server and it's responses, but this is not worth the effort given the fact that
+this function uses unsupported interfaces anyway.
 }
 \examples{
 get_protocol_links()

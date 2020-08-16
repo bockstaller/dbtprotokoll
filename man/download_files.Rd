@@ -16,6 +16,9 @@ A vector with all paths to the downloaded files
 }
 \description{
 Iterates over a vector of links to files and downloads them into the target directory
+There exist no tests for it, because this function interacts directly with external systems and causing load and expenses for the operator of them.
+Testing against them is considered bad practice. I could have mocked the server and it's responses, but this is not worth the effort given the fact that
+this function uses unsupported interfaces anyway.
 }
 \examples{
 parse_protocols(links = c("https://www.bundestag.de/resource/blob/704800/a2bb9229c2e19bbd633d30c747b41c62/19171-data.xml","https://www.bundestag.de/resource/blob/704394/b1d0626827462b96db4e2b7821b1c0cb/19170-data.xml"))
