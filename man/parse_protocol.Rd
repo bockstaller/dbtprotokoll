@@ -24,6 +24,6 @@ Three tibbles in a named list:
 Uses the xml structure of a plenary protocol to create three tibbles for further data analysis.
 }
 \examples{
-parse_protocol("./protokolle/19007-data.xml")
+parse_protocol("./vignettes/protokolle/19007-data.xml")
 
 }

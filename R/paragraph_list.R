@@ -1,14 +1,4 @@
-#' Parse a plenary protocol from xml for paragraphs into tibbles
-#' Uses the xml structure of a plenary protocol to create two tibbles for further analysis
-#'
-#' @param protocol a XML nodeset as returned by xml2 containing a plenary protocoll
-#'
-#' @return A tibble containing all officially spoken paragraphs during a plenary speech.
-#' Including the main speach, moderatory interjections and questions by parliament members
-#'
-#' @examples
-#' paragraph_list(read_xml("./protokolle/19007-data.xml"))
-
+#returns a tibble of all all parts of a speech with speach-id and speaker-id
 paragraph_list <- function(protocol){
 
   #create data frame of fitting shape to collect comments

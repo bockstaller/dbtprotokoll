@@ -21,6 +21,6 @@ Testing against them is considered bad practice. I could have mocked the server 
 this function uses unsupported interfaces anyway.
 }
 \examples{
-parse_protocols(links = "https://www.bundestag.de/resource/blob/704800/a2bb9229c2e19bbd633d30c747b41c62/19171-data.xml")
+download_files(links = "https://www.bundestag.de/resource/blob/704800/a2bb9229c2e19bbd633d30c747b41c62/19171-data.xml")
 
 }
