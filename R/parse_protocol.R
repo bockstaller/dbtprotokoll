@@ -14,9 +14,6 @@
 #'
 #'"comments": A tibble of all comments given during speeches and about reactions to speeches, containing speech id and comment id as well as content of the comment.
 #'
-#'@examples
-#'parse_protocol("./vignettes/protokolle/19007-data.xml")
-#'
 #'@export
 parse_protocol <- function(path, check_schema = TRUE){
   stopifnot("Please enter path as string" = is.character(path))
@@ -57,9 +54,6 @@ parse_protocol <- function(path, check_schema = TRUE){
 #'"paragraphs": A tibble of all paragraphs in speeches, containing speaker id, speech id and content of the paragraph.
 #'
 #'"comments": A tibble of all comments given during speeches and about reactions to speeches, containing speech id and comment id as well as content of the comment.
-#'
-#'@examples
-#'parse_protocols(start = "19001-data.xml", end = "19003-data.xml")
 #'
 #'@export
 parse_protocols <- function(path = "protokolle", start = NULL, end = NULL, instance_count = NULL, check_schema=TRUE){

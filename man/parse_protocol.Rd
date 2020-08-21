@@ -23,7 +23,3 @@ Three tibbles in a named list:
 \description{
 Uses the xml structure of a plenary protocol to create three tibbles for further data analysis.
 }
-\examples{
-parse_protocol("./vignettes/protokolle/19007-data.xml")
-
-}

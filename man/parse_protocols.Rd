@@ -35,7 +35,3 @@ Three tibbles in a named list:
 \description{
 Uses the xml structure of a plenary protocols to create three tibbles for further data analysis with the help of parse_protocol().
 }
-\examples{
-parse_protocols(start = "19001-data.xml", end = "19003-data.xml")
-
-}
